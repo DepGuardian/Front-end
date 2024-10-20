@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // Importar correctamente React
+import React, { useState, useEffect } from "react"; 
 import {
   View,
   Text,
@@ -6,16 +6,18 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  StyleSheet,
 } from "react-native";
 import styles from "./Styles.js";
 import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 
+
 const Landing = () => {
   const navigation = useNavigation();
   //   const [modalConfirm, setModalConfirm] = useState(false);
-  //   const [imageLoaded, setImageLoaded] = useState(false); // Estado para manejar si la imagen está cargada
+  //   const [imageLoaded, setImageLoaded] = useState(false); 
 
   //   useEffect(() => {
   //     // Pre-cargar la imagen
@@ -44,7 +46,7 @@ const Landing = () => {
           onPress={() => {
             console.log("Navegando a SignIn desde Sign Up");
             // console.log("imageLoaded: ", imageLoaded);
-            navigation.navigate("SignIn");
+            navigation.navigate("SignUp");
           }}
         >
           <Text style={styles.textbuttonBlack}>Sign Up</Text>
@@ -54,7 +56,7 @@ const Landing = () => {
           style={styles.buttonWhite}
           onPress={() => {
             console.log("Navegando a SignIn desde Sign Up");
-            navigation.navigate("SignUp");
+            navigation.navigate("SignIn",{user:"123"});
           }}
         >
           <Text style={styles.textbuttonWhite}>Sign in</Text>

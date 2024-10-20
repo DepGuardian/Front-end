@@ -13,7 +13,7 @@ import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
 
 const SignIn = ({ navigation }) => {
-  const [imageLoaded, setImageLoaded] = useState(false); // Estado para manejar si la imagen está cargada
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     const imageSource = require("../assets/probb.png");
@@ -60,7 +60,7 @@ const SignIn = ({ navigation }) => {
         <View style={styles.BottomButtons}>
           <TouchableOpacity
             style={styles.buttonWhite}
-            onPress={() => navigation.navigate("sfa")}
+            onPress={() => navigation.navigate("Landing")}
           >
             <ICONS2 name="return-down-back" size={15} color="black" />
             <Text style={[styles.textbuttonWhite, { marginLeft: 7 }]}>
@@ -69,12 +69,14 @@ const SignIn = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.buttonBlack}
-            onPress={() => navigation.navigate("fsa")}
+            onPress={() => navigation.navigate("Reservas")}
           >
             <Text style={[styles.textbuttonBlack, { marginRight: 7 }]}>
               Ingresar
             </Text>
             <ICONS name="sign-in" size={15} color="white" />
+
+
           </TouchableOpacity>
         </View>
       </View>
