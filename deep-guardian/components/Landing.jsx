@@ -14,19 +14,9 @@ import { useNavigation } from "@react-navigation/native";
 
 const Landing = () => {
   const navigation = useNavigation();
-  //   const [modalConfirm, setModalConfirm] = useState(false);
-  //   const [imageLoaded, setImageLoaded] = useState(false); // Estado para manejar si la imagen está cargada
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  //   useEffect(() => {
-  //     // Pre-cargar la imagen
-  //     const imageSource = require("../assets/probb.png");
-  //     Image.prefetch(imageSource)
-  //       .then(() => {
-  //         setImageLoaded(true);
-  //         console.log("imagen precargada");
-  //       })
-  //       .catch((err) => console.log("Error prefetching image:", err));
-  //   }, []);
+  useEffect(() => {});
 
   return (
     <ImageBackground

@@ -13,15 +13,15 @@ import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
 
 const SignIn = ({ navigation }) => {
-  const [imageLoaded, setImageLoaded] = useState(false); // Estado para manejar si la imagen está cargada
+  //   const [imageLoaded, setImageLoaded] = useState(false); // Estado para manejar si la imagen está cargada
 
-  useEffect(() => {
-    const imageSource = require("../assets/probb.png");
-    console.log("Componente SignIn montado");
-    Image.prefetch(imageSource)
-      .then(() => setImageLoaded(true))
-      .catch((err) => console.log("Error prefetching image:", err));
-  }, []);
+  //   useEffect(() => {
+  //     const imageSource = require("../assets/probb.png");
+  //     console.log("Componente SignIn montado");
+  //     Image.prefetch(imageSource)
+  //       .then(() => setImageLoaded(true))
+  //       .catch((err) => console.log("Error prefetching image:", err));
+  //   }, []);
   return (
     <ImageBackground
       source={require("../assets/probb.png")}
@@ -60,7 +60,7 @@ const SignIn = ({ navigation }) => {
         <View style={styles.BottomButtons}>
           <TouchableOpacity
             style={styles.buttonWhite}
-            onPress={() => navigation.navigate("sfa")}
+            onPress={() => navigation.navigate("SignIn")}
           >
             <ICONS2 name="return-down-back" size={15} color="black" />
             <Text style={[styles.textbuttonWhite, { marginLeft: 7 }]}>
