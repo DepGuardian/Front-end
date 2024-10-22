@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react"; // Importar correctamente React
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   ImageBackground,
   TouchableOpacity,
-  Alert,
-  Image,
+  // Alert,
+  // Image,
 } from "react-native";
 import styles from "./Styles.js";
 import ICONS from "react-native-vector-icons/FontAwesome";
@@ -14,7 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 
 const Landing = () => {
   const navigation = useNavigation();
-  const [imageLoaded, setImageLoaded] = useState(false);
+  // const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {});
 
@@ -32,9 +32,7 @@ const Landing = () => {
         <TouchableOpacity
           style={styles.buttonBlack}
           onPress={() => {
-            console.log("Navegando a SignIn desde Sign Up");
-            // console.log("imageLoaded: ", imageLoaded);
-            navigation.navigate("SignIn");
+            navigation.navigate("SignUp");
           }}
         >
           <Text style={styles.textbuttonBlack}>Sign Up</Text>
@@ -43,8 +41,8 @@ const Landing = () => {
         <TouchableOpacity
           style={styles.buttonWhite}
           onPress={() => {
-            console.log("Navegando a SignIn desde Sign Up");
-            navigation.navigate("SignUp");
+            console.log("Navegando desde Landing a SignIn");
+            navigation.navigate("SignIn");
           }}
         >
           <Text style={styles.textbuttonWhite}>Sign in</Text>

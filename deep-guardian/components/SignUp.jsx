@@ -6,17 +6,13 @@ import {
   TextInput,
   View,
   Text,
-  Modal,
+  Image,
 } from "react-native";
 import styles from "./Styles.js";
 import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
-import Card from "./Card";
 
-const SignIn = ({ navigation }) => {
-  const [showModal, setShowModal] = useState(false);
-  const [codigo, setCodigo] = useState("");
-
+const SignUp = ({ navigation }) => {
   return (
     <ImageBackground
       source={require("../assets/probb.png")}
@@ -35,17 +31,10 @@ const SignIn = ({ navigation }) => {
             placeholder="Ingrese su Nombre"
             placeholderTextColor="#9F9F9F"
           />
-          <Text style={styles.Bold}>Apellido</Text>
+          <Text style={styles.Bold}>Correo</Text>
           <TextInput
             style={styles.input}
             placeholder="Ingrese su email"
-            placeholderTextColor="#9F9F9F"
-            secureTextEntry={true}
-          />
-          <Text style={styles.Bold}>Departamento</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ingrese su departamento"
             placeholderTextColor="#9F9F9F"
             secureTextEntry={true}
           />
@@ -63,7 +52,7 @@ const SignIn = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.buttonBlack}
-            onPress={() => setShowModal(true)}
+            onPress={() => navigation.navigate("Home")}
           >
             <Text style={[styles.textbuttonBlack, { marginRight: 7 }]}>
               Ingresar
@@ -72,21 +61,9 @@ const SignIn = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
-      <Modal
-        transparent={true}
-        visible={showModal}
-        animationType="fade"
-        onRequestClose={() => setShowModal(false)}
-      >
-        <View style={styles.modalBackground}>
-          <Card
-            navigation={navigation}
-            closeModal={() => setShowModal(false)}
-          />
-        </View>
-      </Modal>
+      {/* </View> */}
     </ImageBackground>
   );
 };
 
-export default SignIn;
+export default SignUp;

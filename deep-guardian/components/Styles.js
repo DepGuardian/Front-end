@@ -117,7 +117,6 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
   },
 
-  forms: {},
   Bold: {
     color: "262526",
     fontFamily: "Poppins",
@@ -145,6 +144,37 @@ const styles = StyleSheet.create({
     width: 333,
     borderRadius: 5,
     borderWidth: 1,
+  },
+  miniCard: {
+    backgroundColor: "white",
+    width: 353,
+    height: 333,
+    marginTop: 50,
+    marginBottom: 50,
+    marginLeft: 20,
+    marginRight: 20,
+    borderRadius: 50,
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 20,
+    borderColor: "black",
+  },
+  miniCardText: {
+    color: " black",
+    textAlign: "center",
+    fontFamily: "Poppins",
+    fontSize: 30,
+    fontStyle: "normal",
+    fontWeight: "700",
+    lineHeight: 41,
+    letterSpacing: 0.4,
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
 });
 
