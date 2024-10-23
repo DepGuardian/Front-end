@@ -1,36 +1,18 @@
-import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useEffect, useState } from "react";
-import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
-import { useFonts } from "expo-font"; 
-import * as SplashScreen from "expo-splash-screen";
+import { StyleSheet, View } from "react-native";
+
 import Landing from "./components/Landing";
 import SignIn from "./components/SignIn";
 import Reservas from "./components/Reservas";
+import SignUp from "./components/SignUp";
+import Home from "./components/Home";
+
 const Stack = createNativeStackNavigator();
 
-SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-  const [fontsLoaded] = useFonts({
-    "Poppins-Regular": require("./assets/fonts/Poppins-Regular.ttf"),
-    "Poppins-Bold": require("./assets/fonts/Poppins-Bold.ttf"),
-  });
-
-  useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync(); 
-    }
-  }, [fontsLoaded]);
-
-  if (!fontsLoaded) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
+  
 
   return (
     <NavigationContainer>
@@ -50,6 +32,16 @@ export default function App() {
           component={Reservas}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="SignUp"
+          component={SignUp}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Home"
+          component={Home}
+          options={{ headerShown: false }}
+          />
       </Stack.Navigator>
     </NavigationContainer>
   );
