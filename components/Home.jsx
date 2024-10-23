@@ -11,7 +11,7 @@ import styles from "./Styles.js";
 const Home = ({ navigation }) => {
   return (
     <View style={styles.miniCard}>
-      <View style={{ width: 310, height: 82 }}>
+      <View style={{ width: 110, height: 20 }}>
         <Text style={styles.miniCardText}>
           Ingresa tu código de propietario
         </Text>
@@ -29,7 +29,7 @@ const Home = ({ navigation }) => {
               color: "262526",
               fontFamily: "Poppins",
               fontStyle: "normal",
-              lineHeight: "normal",
+              lineHeight: 20,
               fontWeight: "300",
             },
           ]}
