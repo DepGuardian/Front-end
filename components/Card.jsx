@@ -56,7 +56,7 @@ const Card = ({ navigation, closeModal }) => {
           ]}
           onPress={() => {
             closeModal();
-            navigation.navigate("Home");
+            navigation.navigate("Pasarela");
           }}
         >
           <Text

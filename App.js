@@ -6,7 +6,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Landing from "./components/Landing";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
-import Home from "./components/Home";
+import Pasarela from "./components/Pasarela";
 
 const Stack = createNativeStackNavigator();
 
@@ -30,8 +30,8 @@ export default function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Home"
-          component={Home}
+          name="Pasarela"
+          component={Pasarela}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
