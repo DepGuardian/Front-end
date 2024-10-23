@@ -52,7 +52,7 @@ const SignUp = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.buttonBlack}
-            onPress={() => navigation.navigate("Home")}
+            onPress={() => navigation.navigate("Pasarela")}
           >
             <Text style={[styles.textbuttonBlack, { marginRight: 7 }]}>
               Ingresar
