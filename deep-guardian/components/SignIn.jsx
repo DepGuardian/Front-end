@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Card from "./Card";
 
 import {
   ImageBackground,
@@ -6,22 +7,17 @@ import {
   TextInput,
   View,
   Text,
-  Image,
+  Modal,
 } from "react-native";
 import styles from "./Styles.js";
 import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
 
 const SignIn = ({ navigation }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [codigo, setCodigo] = useState("");
 
-  useEffect(() => {
-    const imageSource = require("../assets/probb.png");
-    console.log("Componente SignIn montado");
-    Image.prefetch(imageSource)
-      .then(() => setImageLoaded(true))
-      .catch((err) => console.log("Error prefetching image:", err));
-  }, []);
+  
   return (
     <ImageBackground
       source={require("../assets/probb.png")}
@@ -80,7 +76,19 @@ const SignIn = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
-      {/* </View> */}
+      <Modal
+        transparent={true}
+        visible={showModal}
+        animationType="fade"
+        onRequestClose={() => setShowModal(false)}
+      >
+        <View style={styles.modalBackground}>
+          <Card
+            navigation={navigation}
+            closeModal={() => setShowModal(false)}
+          />
+        </View>
+      </Modal>
     </ImageBackground>
   );
 };

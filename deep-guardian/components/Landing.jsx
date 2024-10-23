@@ -1,34 +1,22 @@
-import React, { useState, useEffect } from "react"; 
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   ImageBackground,
   TouchableOpacity,
-  Alert,
-  Image,
-  StyleSheet,
+  // Alert,
+  // Image,
 } from "react-native";
 import styles from "./Styles.js";
 import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 
-
 const Landing = () => {
   const navigation = useNavigation();
-  //   const [modalConfirm, setModalConfirm] = useState(false);
-  //   const [imageLoaded, setImageLoaded] = useState(false); 
+  // const [imageLoaded, setImageLoaded] = useState(false);
 
-  //   useEffect(() => {
-  //     // Pre-cargar la imagen
-  //     const imageSource = require("../assets/probb.png");
-  //     Image.prefetch(imageSource)
-  //       .then(() => {
-  //         setImageLoaded(true);
-  //         console.log("imagen precargada");
-  //       })
-  //       .catch((err) => console.log("Error prefetching image:", err));
-  //   }, []);
+  useEffect(() => {});
 
   return (
     <ImageBackground
@@ -44,8 +32,6 @@ const Landing = () => {
         <TouchableOpacity
           style={styles.buttonBlack}
           onPress={() => {
-            console.log("Navegando a SignIn desde Sign Up");
-            // console.log("imageLoaded: ", imageLoaded);
             navigation.navigate("SignUp");
           }}
         >
@@ -55,8 +41,8 @@ const Landing = () => {
         <TouchableOpacity
           style={styles.buttonWhite}
           onPress={() => {
-            console.log("Navegando a SignIn desde Sign Up");
-            navigation.navigate("SignIn",{user:"123"});
+            console.log("Navegando desde Landing a SignIn");
+            navigation.navigate("SignIn");
           }}
         >
           <Text style={styles.textbuttonWhite}>Sign in</Text>

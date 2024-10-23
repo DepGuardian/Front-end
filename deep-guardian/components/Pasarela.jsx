@@ -1,84 +1,41 @@
-import React from "react"; 
-import { ScrollView, View, Text, TouchableOpacity, Image } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  ScrollView,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import styles from "./Styles.js";
 import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import LogoBar from "./LogoBar.jsx";
 
-const Reservas = () => {
+const Pasarela = () => {
   const navigation = useNavigation();
 
   return (
-    <View style={[styles.general, { backgroundColor: "white" }]}>
-      <View style={[styles.logo_deep_foto,{
-        top:-5,
-        zIndex:2,
+    <View
+      style={[
+        styles.general,
+        {
+          weidth: 393,
+          height: 852,
+          marginTop: 0,
+          marginBottom: 0,
+          marginLeft: 0,
+          marginRight: 0,
+          flexDirection: "column",
+          justifyContent: "space-between ",
+          alignItems: "stretch",
+        },
+      ]}
+    >
+      <LogoBar />
 
-      }]}>
-        <Text
-          style={[
-            styles.textbuttonWhite,
-            {
-              position: "absolute",
-              left: 15,
-              fontSize: 21,
-              fontWeight: "700",
-              zIndex: 2,
-            },
-          ]}
-        >
-          DepGuardian
-        </Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Notifications")}
-          style={{
-            left: -20,
-            marginTop: 0,
-          }}
-        >
-          <ICONS2 name="notifications-outline" size={30} color="black" />
-        </TouchableOpacity>
-        <Image
-          source={require("../assets/perfil_deep_guardian.jpg")}
-          style={{
-            width: 50,
-            height: 50,
-            borderRadius: 25,
-            marginRight: -280,
-          }}
-        />
-      </View>
-
-      <View style={styles.nombre_pag}>
-        {/* El apartado del nombre */}
-        <Text
-          style={[
-            styles.textbuttonWhite,
-            {
-              position: "absolute",
-              top: 70,
-              left: 10,
-              fontSize: 24,
-              fontWeight: "900",
-            },
-          ]}
-        >
-          Reserva un área común
-        </Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Notifications")}
-          style={{
-            left: 160,
-            top: 55,
-          }}
-        >
-          <ICONS2 name="ticket-outline" size={30} color="black" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={[styles.Card_reservas,{
-        height:645,
-      }]}>
+      {/* <View style={styles.Card_reservas}>
         <ScrollView
           contentContainerStyle={{ paddingVertical: 10 }}
           showsVerticalScrollIndicator={false}
@@ -86,7 +43,7 @@ const Reservas = () => {
           {Array.from({ length: 10 }).map((_, index) => (
             <View key={index} style={styles.Card_reservas_ejemplo}>
               <Image
-                source={require("../assets/sala_juegos.jpg")}
+                source={require("../assets/probb.png")}
                 style={{
                   width: 150,
                   height: 130,
@@ -96,12 +53,13 @@ const Reservas = () => {
                   borderBottomRightRadius: 0,
                 }}
               />
+
               <Text
                 style={[
                   styles.textbuttonWhite,
                   {
                     position: "absolute",
-                    top: 4,
+                    top: 15,
                     left: 170,
                     fontSize: 23,
                   },
@@ -133,7 +91,7 @@ const Reservas = () => {
         </ScrollView>
 
         <View style={styles.bottomBar}>
-          <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+          <TouchableOpacity onPress={() => navigation.navigate("Pasarela")}>
             <ICONS2 name="home-outline" size={30} color="black" />
           </TouchableOpacity>
 
@@ -145,7 +103,9 @@ const Reservas = () => {
             <ICONS2 name="person-outline" size={30} color="black" />
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => navigation.navigate("Notifications")}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Notifications")}
+          >
             <ICONS2 name="notifications-outline" size={30} color="black" />
           </TouchableOpacity>
 
@@ -153,9 +113,9 @@ const Reservas = () => {
             <ICONS2 name="list-outline" size={30} color="black" />
           </TouchableOpacity>
         </View>
-      </View>
+      </View> */}
     </View>
   );
 };
 
-export default Reservas;
+export default Pasarela;
