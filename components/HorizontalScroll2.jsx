@@ -18,7 +18,7 @@ const HorizontalScroll2 = () => {
       data={AlertsContent2}
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
-      horizontal // Para alinear los elementos en fila horizontal
+      horizontal
     />
     // </View>
   );
@@ -45,12 +45,12 @@ const styles = StyleSheet.create({
     height: 34,
     justifyContent: "center",
     alignItems: "center",
-    flexDirection: "row", // Colocar el icono y el texto en línea
+    flexDirection: "row",
     borderColor: "black",
     borderWidth: 1,
   },
   icon: {
-    marginRight: 5, // Espaciado entre el ícono y el texto
+    marginRight: 5,
   },
   title: {
     color: "black",
