@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import Pasarela from "./Pasarela";
 const styles = StyleSheet.create({
   general: {
     flex: 1,
@@ -29,6 +30,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "white",
     // gap: 10,
+  },
+  Container: {
+    weidth: 353,
+    height: 632,
+    padding: 10,
+    // marginTop: 20,
+    marginBottom: 20,
+    marginLeft: 20,
+    marginRight: 20,
+    flexDirection: "column",
+    alignItems: "flex-start",
+    alignSelf: "stretch",
+    gap: 10,
+    borderColor: "black",
+    // borderWidth: 1,
   },
 
   Logo: {
@@ -181,6 +197,27 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 27,
   },
+  Pasarela: {
+    width: 333,
+    height: 95,
+    paddingTop: 10,
+    paddingBottom: 10,
+    marginTop: 10,
+    marginBottom: 10,
+    marginRight: 10,
+    alignItems: "center",
+    gap: 10,
+    alignSelf: "stretch",
+    borderColor: "black",
+    // borderWidth: 1,
+  },
+  BoxesContainer: {
+    flex: 3,
+    width: 100,
+    borderColor: "black",
+    borderWidth: 1,
+  },
+
   Card_reservas_ejemplo: {
     width: 370,
     height: 130,
