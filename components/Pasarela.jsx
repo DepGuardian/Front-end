@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import LogoBar from "./LogoBar.jsx";
 import HorizontalScroll from "./HorizontalScroll.jsx";
 import HorizontalScroll2 from "./HorizontalScroll2.jsx";
+import ActionsList from "./ActionsList.jsx";
 
 const Pasarela = () => {
   const navigation = useNavigation();
@@ -80,7 +81,6 @@ const Pasarela = () => {
                 lineHeight: 45,
               }}
             >
-              {" "}
               Acciones Rápidas
             </Text>
             <TouchableOpacity
@@ -91,6 +91,7 @@ const Pasarela = () => {
               <ICONS2 name="arrow-forward" size={25} color="black" />
             </TouchableOpacity>
           </View>
+          <ActionsList />
         </View>
       </View>
 

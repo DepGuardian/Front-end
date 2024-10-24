@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import Pasarela from "./Pasarela";
+
 const styles = StyleSheet.create({
   general: {
     flex: 1,
