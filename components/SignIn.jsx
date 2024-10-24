@@ -38,7 +38,7 @@ const SignIn = ({ navigation }) => {
           <Text style={styles.Bold}>Apellido</Text>
           <TextInput
             style={styles.input}
-            placeholder="Ingrese su email"
+            placeholder="Ingrese su apellido"
             placeholderTextColor="#9F9F9F"
             secureTextEntry={true}
           />
