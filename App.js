@@ -7,10 +7,17 @@ import Landing from "./components/Landing";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import Pasarela from "./components/Pasarela";
+import ToDoFamiliar from "./components/ToDoFamiliar";
+import { useFonts } from "expo-font";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Poppins: require("./assets/fonts/Poppins-Regular.ttf"),
+    "Poppins-Bold": require("./assets/fonts/Poppins-Bold.ttf"),
+  });
+
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Landing">
@@ -32,6 +39,11 @@ export default function App() {
         <Stack.Screen
           name="Pasarela"
           component={Pasarela}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ToDoFamiliar"
+          component={ToDoFamiliar}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

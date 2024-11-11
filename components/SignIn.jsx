@@ -40,7 +40,7 @@ const SignIn = ({ navigation }) => {
             style={styles.input}
             placeholder="Ingrese su email"
             placeholderTextColor="#9F9F9F"
-            secureTextEntry={true}
+            secureTextEntry={false}
           />
           <Text style={styles.Bold}>Departamento</Text>
           <TextInput
