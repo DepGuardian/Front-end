@@ -13,11 +13,6 @@ import { useFonts } from "expo-font";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const [fontsLoaded] = useFonts({
-    Poppins: require("./assets/fonts/Poppins-Regular.ttf"),
-    "Poppins-Bold": require("./assets/fonts/Poppins-Bold.ttf"),
-  });
-
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Landing">
