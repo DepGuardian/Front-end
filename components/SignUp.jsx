@@ -25,13 +25,13 @@ const SignUp = ({ navigation }) => {
           <Text style={styles.textoLogoGrande}>Miraflores Urban</Text>
         </View>
         <View style={[styles.CardForms, { gap: 10 }]}>
-          <Text style={styles.Bold}>Nombre Completo</Text>
+          <Text style={styles.Bold}>Usuario o Correo Electronico</Text>
           <TextInput
             style={styles.input}
             placeholder="Ingrese su Nombre"
             placeholderTextColor="#9F9F9F"
           />
-          <Text style={styles.Bold}>Correo</Text>
+          <Text style={styles.Bold}>Contraseña</Text>
           <TextInput
             style={styles.input}
             placeholder="Ingrese su email"

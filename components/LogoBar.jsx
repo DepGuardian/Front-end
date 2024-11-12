@@ -21,7 +21,6 @@ const LogoBar = () => {
         styles.Card,
         {
           marginTop: 50,
-          marginBottom: 20,
           marginLeft: 20,
           marginRight: 20,
           width: 353,
