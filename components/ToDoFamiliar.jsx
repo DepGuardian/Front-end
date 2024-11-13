@@ -8,9 +8,13 @@ import {
   Alert,
   Modal,
   TouchableOpacity,
+  Button,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import ICONS from "react-native-vector-icons/Ionicons";
 
 const ToDoFamiliar = () => {
+  const navigation = useNavigation();
   const [tareas, setTareas] = useState([]);
   const [miembros, setMiembros] = useState([]);
   const [nuevaTarea, setNuevaTarea] = useState("");
@@ -110,6 +114,12 @@ const ToDoFamiliar = () => {
 
   return (
     <View style={{ padding: 20 }}>
+      <View>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <ICONS name="arrow-back" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
+
       <Text style={{ fontSize: 24, fontWeight: "bold" }}>Planner Familiar</Text>
 
       <View

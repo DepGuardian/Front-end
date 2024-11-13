@@ -10,11 +10,9 @@ import {
 import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
-import ToDoFamiliar from "./ToDoFamiliar";
+import ICONS3 from "react-native-vector-icons/Ionicons";
+
 import LogoBar from "./LogoBar";
-import HorizontalScroll from "./HorizontalScroll.jsx";
-import HorizontalScroll2 from "./HorizontalScroll2.jsx";
-import ActionsList from "./ActionsList.jsx";
 
 const Pasarela = () => {
   const navigation = useNavigation();
@@ -24,83 +22,11 @@ const Pasarela = () => {
   };
 
   return (
-<<<<<<< HEAD
     <ScrollView style={styles.container}>
-=======
-    <View
-      style={[
-        styles.general,
-        {
-          weidth: 393,
-          height: 852,
-          marginTop: 0,
-          marginBottom: 0,
-          marginLeft: 0,
-          marginRight: 0,
-          flexDirection: "column",
-          justifyContent: "space-between ",
-          alignItems: "stretch",
-          padding: 10,
-        },
-      ]}
-    >
->>>>>>> efb149921fa8b8f6391d6160ea818e30c52a1a34
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <ICONS3 name="arrow-back" size={24} color="black" />
+      </TouchableOpacity>
       <LogoBar />
-      <View style={styles.Container}>
-        <View>
-          <Text
-            style={[
-              styles.Bold,
-              {
-                weidth: 333,
-                height: 45,
-                lineHeight: 45,
-                fontWeight: "700",
-                fontSize: 20,
-              },
-            ]}
-          >
-            Buenas Noches, Vale!
-          </Text>
-        </View>
-
-        <View style={[styles.Pasarela, { marginTop: 0, marginBottom: 0 }]}>
-          <HorizontalScroll />
-        </View>
-        <View style={[styles.Pasarela, { height: 80, marginTop: 0 }]}>
-          <HorizontalScroll2 />
-        </View>
-        <View>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Text
-              style={{
-                width: 179,
-                height: 45,
-                fontSize: 20,
-                fontStyle: "normal",
-                fontWeight: "700",
-                lineHeight: 45,
-              }}
-            >
-              Acciones Rápidas
-            </Text>
-            <TouchableOpacity
-              style={{
-                marginLeft: 15,
-              }}
-            >
-              <ICONS2 name="arrow-forward" size={25} color="black" />
-            </TouchableOpacity>
-          </View>
-          <ActionsList />
-        </View>
-      </View>
 
       {/* Header */}
       <View style={styles.header}>
@@ -196,6 +122,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  containerInner: {
+    padding: 20,
+  },
+  greetingText: {
+    fontWeight: "700",
+    fontSize: 20,
+    marginBottom: 20,
+  },
+  pasarelaSection: {
+    marginTop: 0,
+    marginBottom: 20,
+  },
+  quickActionsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  quickActionsText: {
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  arrowButton: {
+    marginLeft: 15,
   },
   header: {
     padding: 20,
