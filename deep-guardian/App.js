@@ -1,6 +1,7 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StyleSheet, View } from "react-native";
+import { useFonts } from "expo-font"; 
 
 import Landing from "./components/Landing";
 import SignIn from "./components/SignIn";
@@ -12,7 +13,10 @@ const Stack = createNativeStackNavigator();
 
 
 export default function App() {
-  
+  const [fontsLoaded] = useFonts({
+    "Poppins-Regular": require("./assets/fonts/Poppins-Regular.ttf"),
+    "Poppins-Bold": require("./assets/fonts/Poppins-Bold.ttf"),
+  });
 
   return (
     <NavigationContainer>
