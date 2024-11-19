@@ -104,7 +104,6 @@ const styles = StyleSheet.create({
   },
   textoLogo: {
     color: "#000",
-    fontFamily: "Poppins",
     fontSize: 13,
     fontStyle: "normal",
     fontWeight: "700",
@@ -114,7 +113,6 @@ const styles = StyleSheet.create({
   textoLogoGrande: {
     alignSelf: "stretch",
     color: "#000",
-    fontFamily: "Poppins",
     fontSize: 50,
     fontStyle: "normal",
     fontWeight: "700",
@@ -135,7 +133,6 @@ const styles = StyleSheet.create({
 
   Bold: {
     color: "262526",
-    fontFamily: "Poppins",
     textAlign: "center",
     fontSize: 13,
     fontStyle: "normal",
@@ -179,7 +176,6 @@ const styles = StyleSheet.create({
   miniCardText: {
     color: " black",
     textAlign: "center",
-    fontFamily: "Poppins",
     fontSize: 30,
     fontStyle: "normal",
     fontWeight: "700",
