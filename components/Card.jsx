@@ -36,6 +36,7 @@ const Card = ({ navigation, closeModal }) => {
               fontSize: 30,
               textAlign: "center",
               color: "262526",
+              fontFamily: "Poppins",
               fontStyle: "normal",
               lineHeight: "normal",
               fontWeight: "300",
@@ -66,6 +67,7 @@ const Card = ({ navigation, closeModal }) => {
                 fontWeight: "600",
                 lineHeight: "normal",
                 fontSize: 20,
+                fontFamily: "Poppins",
                 textAlign: "center",
               },
             ]}

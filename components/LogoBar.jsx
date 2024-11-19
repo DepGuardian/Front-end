@@ -21,6 +21,7 @@ const LogoBar = () => {
         styles.Card,
         {
           marginTop: 50,
+          marginBottom: 20,
           marginLeft: 20,
           marginRight: 20,
           width: 353,
@@ -91,7 +92,7 @@ const LogoBar = () => {
           <ICONS2 name="notifications-outline" size={30} color="black" />
         </TouchableOpacity>
         <Image
-          source={require("../assets/profile.png")}
+          source={require("../assets/perfil_deep_guardian.jpg")}
           style={styles.profileImage}
         />
       </View>
