@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef,useEffect  } from "react";
 import { ScrollView, View, Text, TouchableOpacity, Image, Modal, FlatList } from "react-native";
 import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
@@ -123,9 +123,32 @@ const Reservas = () => {
   const [selectedStartHour, setSelectedStartHour] = useState("08:00 AM");
   const [selectedEndHour, setSelectedEndHour] = useState("09:00 AM");
   const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
+  const infiniteHours = [...hours, ...hours, ...hours];
+  const middleIndex = hours.length;
+  const handleScroll = (event) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    const contentHeight = event.nativeEvent.contentSize.height;
+    const layoutHeight = event.nativeEvent.layoutMeasurement.height;
 
+    // Si el usuario llega al final, reseteamos al inicio
+    if (offsetY >= contentHeight - layoutHeight - 50) {
+      startHourRef.current.scrollToIndex({ index: middleIndex, animated: false });
+    }
+    // Si el usuario llega al inicio, reseteamos al centro
+    if (offsetY <= 50) {
+      startHourRef.current.scrollToIndex({ index: middleIndex, animated: false });
+    }
+  };
   const startHourRef = useRef(null);
   const endHourRef = useRef(null);
+  useEffect(() => {
+    // Al montar el componente, scrolleamos al centro para dar la impresión de scroll infinito
+    if (startHourRef.current) {
+      startHourRef.current.scrollToIndex({ index: middleIndex, animated: false });
+    }
+  }, []);
+
+
 
   const renderTimeOption = (hour, setSelectedHour) => (
     <TouchableOpacity
@@ -140,9 +163,11 @@ const Reservas = () => {
     </TouchableOpacity>
   );
 
-  const getItemLayout = (data, index) => (
-    { length: 50, offset: 50 * index, index }
-  );
+  const getItemLayout = (data, index) => ({
+    length: 50,
+    offset: 50 * index,
+    index,
+  });
  
   return (
     <View style={[styles.general, { backgroundColor: "white" }]}>
@@ -290,20 +315,19 @@ const Reservas = () => {
         ))}
       </View>
 
-      {/* Crear el calendario con las semanas */}
       <FlatList
-  data={createCalendar(selectedYear, selectedMonth)} // Los días generados
-  numColumns={7} // 7 columnas para los días de la semana
-  renderItem={({ item }) => (
-    <TouchableOpacity
-      style={[styles.modalStyles.item, item === selectedDay && { backgroundColor: "#d7feff" }]} // Cambia el fondo si es seleccionado
-      onPress={() => item !== 0 && setSelectedDay(item) } // Solo selecciona los días válidos (no 0)
-    >
-      {item !== 0 && <Text style={[styles.modalStyles.itemText,item === selectedDay && { color: "#00cbd1" ,fontSize:20,fontWeight: "bold",}]}>{item}</Text>}
-    </TouchableOpacity>
-  )}
-  keyExtractor={(item, index) => index.toString()} // Usamos el índice como clave única
-/>
+          data={createCalendar(selectedYear, selectedMonth)} // Los días generados
+          numColumns={7} // 7 columnas para los días de la semana
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[styles.modalStyles.item, item === selectedDay && { backgroundColor: "#d7feff" }]} // Cambia el fondo si es seleccionado
+              onPress={() => item !== 0 && setSelectedDay(item) } // Solo selecciona los días válidos (no 0)
+            >
+              {item !== 0 && <Text style={[styles.modalStyles.itemText,item === selectedDay && { color: "#00cbd1" ,fontSize:20,fontWeight: "bold",}]}>{item}</Text>}
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item, index) => index.toString()} // Usamos el índice como clave única
+       />
 
 
       {/* Botón para confirmar la selección */}
@@ -329,17 +353,19 @@ const Reservas = () => {
               <View style={{ height: 150 }}>
                 <FlatList
                   ref={startHourRef}
-                  data={hours}
-                  keyExtractor={(item) => item}
+                  data={infiniteHours}
+                  keyExtractor={(item, index) => index.toString()}
                   renderItem={({ item }) => renderTimeOption(item, setSelectedStartHour)}
-                  getItemLayout={getItemLayout} 
-                  initialScrollIndex={hours.indexOf(selectedStartHour)} 
+                  getItemLayout={getItemLayout}
+                  initialScrollIndex={middleIndex} // Empezamos en el centro
                   showsVerticalScrollIndicator={false}
-                  snapToInterval={50} 
+                  snapToInterval={50}
                   snapToAlignment="center"
                   decelerationRate="fast"
-                  pagingEnabled 
+                  pagingEnabled
                   contentContainerStyle={{ paddingVertical: 50 }}
+                  onScroll={handleScroll} // Detecta cuando reiniciar el scroll
+                  scrollEventThrottle={16} // Ajusta la frecuencia de evento de scroll para rendimiento
                 />
               </View>
 
@@ -363,19 +389,21 @@ const Reservas = () => {
             <Text style={styles.modalStyles.timeModalTitle}>Seleccione la hora de fin</Text>
 
             <View style={{ height: 150 }}> 
-                <FlatList
-                  ref={startHourRef}
-                  data={hours}
-                  keyExtractor={(item) => item}
+              <FlatList
+                  ref={endHourRef}
+                  data={infiniteHours}
+                  keyExtractor={(item, index) => index.toString()}
                   renderItem={({ item }) => renderTimeOption(item, setSelectedEndHour)}
-                  getItemLayout={getItemLayout} 
-                  initialScrollIndex={hours.indexOf(selectedEndHour)} 
+                  getItemLayout={getItemLayout}
+                  initialScrollIndex={middleIndex} // Empezamos en el centro
                   showsVerticalScrollIndicator={false}
-                  snapToInterval={50} 
+                  snapToInterval={50}
                   snapToAlignment="center"
                   decelerationRate="fast"
                   pagingEnabled
                   contentContainerStyle={{ paddingVertical: 50 }}
+                  onScroll={handleScroll} // Detecta cuando reiniciar el scroll
+                  scrollEventThrottle={16} // Ajusta la frecuencia de evento de scroll para rendimiento
                 />
               </View>
 
