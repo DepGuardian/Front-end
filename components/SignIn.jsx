@@ -12,12 +12,12 @@ import {
 import styles from "./Styles.js";
 import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
+import Card from "./Card";
 
 const SignIn = ({ navigation }) => {
   const [showModal, setShowModal] = useState(false);
   const [codigo, setCodigo] = useState("");
 
-  
   return (
     <ImageBackground
       source={require("../assets/probb.png")}
@@ -39,9 +39,9 @@ const SignIn = ({ navigation }) => {
           <Text style={styles.Bold}>Apellido</Text>
           <TextInput
             style={styles.input}
-            placeholder="Ingrese su email"
+            placeholder="Ingrese su apellido"
             placeholderTextColor="#9F9F9F"
-            secureTextEntry={true}
+            secureTextEntry={false}
           />
           <Text style={styles.Bold}>Departamento</Text>
           <TextInput
@@ -52,7 +52,6 @@ const SignIn = ({ navigation }) => {
           />
         </View>
 
-        {/* separamos */}
         <View style={styles.BottomButtons}>
           <TouchableOpacity
             style={styles.buttonWhite}
@@ -65,7 +64,7 @@ const SignIn = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.buttonBlack}
-            onPress={() => navigation.navigate("Reservas")}
+            onPress={() => setShowModal(true)}
           >
             <Text style={[styles.textbuttonBlack, { marginRight: 7 }]}>
               Ingresar

@@ -1,3 +1,5 @@
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StyleSheet, View } from "react-native";
@@ -8,6 +10,9 @@ import SignIn from "./components/SignIn";
 import Reservas from "./components/Reservas";
 import SignUp from "./components/SignUp";
 import Home from "./components/Home";
+import Pasarela from "./components/Pasarela";
+import ToDoFamiliar from "./components/ToDoFamiliar";
+import { useFonts } from "expo-font";
 
 const Stack = createNativeStackNavigator();
 
@@ -46,6 +51,16 @@ export default function App() {
           component={Home}
           options={{ headerShown: false }}
           />
+        <Stack.Screen
+          name="Pasarela"
+          component={Pasarela}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ToDoFamiliar"
+          component={ToDoFamiliar}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
