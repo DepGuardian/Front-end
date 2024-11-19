@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
-  ScrollView,
   View,
   Text,
   Image,
   TouchableOpacity,
-  StyleSheet,
 } from "react-native";
-import styles from "./Styles.js";
-import ICONS from "react-native-vector-icons/FontAwesome";
+import styles from "./Styles";
 import ICONS2 from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 
@@ -92,7 +89,7 @@ const LogoBar = () => {
           <ICONS2 name="notifications-outline" size={30} color="black" />
         </TouchableOpacity>
         <Image
-          source={require("../assets/perfil_deep_guardian.jpg")}
+          source={require("../../assets/perfil_deep_guardian.jpg")}
           style={styles.profileImage}
         />
       </View>

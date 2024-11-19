@@ -4,14 +4,14 @@ export const ActionsData = [
     title: "Ir a Reserva",
     description:
       "Aprovecha las áreas comunes de tu condominio y reserva ahora.",
-    image: require("../assets/reserva.jpg"),
+    image: require("/assets/reserva.jpg"),
     link: "ReservaScreen",
   },
   {
     id: "2",
     title: "Ir a Paquetería",
     description: "Revisa si tus paquetes ya están disponibles en recepción.",
-    image: require("../assets/paqueteria.jpg"),
+    image: require("/assets/paqueteria.jpg"),
     link: "PaqueteriaScreen",
   },
   {
@@ -19,7 +19,7 @@ export const ActionsData = [
     title: "Ir a Pagos",
     description:
       "Mantente informado respecto al pago de tus servicios y alquiler.",
-    image: require("../assets/pagos.jpg"),
+    image: require("/assets/pagos.jpg"),
     link: "PagosScreen",
   },
 ];

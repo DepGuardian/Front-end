@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import Card from "./Card";
+import React from "react";
 
 import {
   ImageBackground,
@@ -7,21 +6,16 @@ import {
   TextInput,
   View,
   Text,
-  Modal,
 } from "react-native";
-import styles from "./Styles.js";
+import styles from "./Styles";
 import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
-import Card from "./Card";
 
-const SignIn = ({ navigation }) => {
-  const [showModal, setShowModal] = useState(false);
-  const [codigo, setCodigo] = useState("");
-
+const SignUp = ({ navigation }) => {
   return (
     <ImageBackground
-      source={require("../assets/probb.png")}
-      style={styles.general}
+    source={require("../../assets/probb.png")}
+    style={styles.general}
       resizeMethod="cover"
     >
       <View style={[styles.Card, { height: 504 }]}>
@@ -30,25 +24,18 @@ const SignIn = ({ navigation }) => {
           <Text style={styles.textoLogoGrande}>Miraflores Urban</Text>
         </View>
         <View style={[styles.CardForms, { gap: 10 }]}>
-          <Text style={styles.Bold}>Nombre Completo</Text>
+          <Text style={styles.Bold}>Usuario o Correo Electronico</Text>
           <TextInput
             style={styles.input}
             placeholder="Ingrese su Nombre"
             placeholderTextColor="#9F9F9F"
           />
-          <Text style={styles.Bold}>Apellido</Text>
+          <Text style={styles.Bold}>Contraseña</Text>
           <TextInput
             style={styles.input}
-            placeholder="Ingrese su apellido"
+            placeholder="Ingrese su email"
             placeholderTextColor="#9F9F9F"
             secureTextEntry={false}
-          />
-          <Text style={styles.Bold}>Departamento</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ingrese su departamento"
-            placeholderTextColor="#9F9F9F"
-            secureTextEntry={true}
           />
         </View>
 
@@ -64,32 +51,18 @@ const SignIn = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.buttonBlack}
-            onPress={() => setShowModal(true)}
+            onPress={() => navigation.navigate("Pasarela")}
           >
             <Text style={[styles.textbuttonBlack, { marginRight: 7 }]}>
               Ingresar
             </Text>
             <ICONS name="sign-in" size={15} color="white" />
-
-
           </TouchableOpacity>
         </View>
       </View>
-      <Modal
-        transparent={true}
-        visible={showModal}
-        animationType="fade"
-        onRequestClose={() => setShowModal(false)}
-      >
-        <View style={styles.modalBackground}>
-          <Card
-            navigation={navigation}
-            closeModal={() => setShowModal(false)}
-          />
-        </View>
-      </Modal>
+      {/* </View> */}
     </ImageBackground>
   );
 };
 
-export default SignIn;
+export default SignUp;
