@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import ICONS from "react-native-vector-icons/Ionicons";
+import PerfilBar from "../../components/common/PerfilBar";
 
 const ToDoFamiliar = () => {
   const navigation = useNavigation();
@@ -92,13 +93,13 @@ const ToDoFamiliar = () => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         onPress={() => navigation.navigate("Pasarela")}
         style={styles.backButton}
       >
         <ICONS name="arrow-back" size={24} color="black" />
-      </TouchableOpacity>
-
+      </TouchableOpacity> */}
+      <PerfilBar />
       <Text style={styles.title}>Planner Familiar</Text>
 
       <Pressable
@@ -218,6 +219,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   title: {
+    paddingTop: "4%",
     fontSize: 24,
     fontWeight: "bold",
     marginVertical: 20,

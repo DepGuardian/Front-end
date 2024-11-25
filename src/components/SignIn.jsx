@@ -68,8 +68,6 @@ const SignIn = ({ navigation }) => {
               Ingresar
             </Text>
             <ICONS name="sign-in" size={15} color="white" />
-
-
           </TouchableOpacity>
         </View>
       </View>

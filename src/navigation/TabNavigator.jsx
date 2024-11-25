@@ -8,6 +8,8 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import Home from "../screens/main/Home";
 import Reservas from "../screens/features/Reservas";
 import ToDoFamiliar from "../screens/features/ToDoFamiliar";
+import Pasarela from "../screens/main/Pasarela";
+import Pagos from "../screens/features/Pagos";
 
 const Tab = createBottomTabNavigator();
 
@@ -54,7 +56,7 @@ export const TabNavigator = () => {
     >
       <Tab.Screen
         name="HomeTab"
-        component={Home}
+        component={Pasarela}
         options={{
           title: "Inicio",
           unmountOnBlur: true,
@@ -122,6 +124,23 @@ export const TabNavigator = () => {
               ]}
             >
               Menú
+            </Text>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="NotificationsTab"
+        component={Pagos}
+        options={{
+          title: "Notificaciones",
+          tabBarLabel: ({ focused, color }) => (
+            <Text
+              style={[
+                styles.tabBarLabel,
+                { color: focused ? "#000000" : "#757575" },
+              ]}
+            >
+              Notificaciones
             </Text>
           ),
         }}

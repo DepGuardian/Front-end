@@ -14,8 +14,8 @@ import ICONS2 from "react-native-vector-icons/Ionicons";
 const SignUp = ({ navigation }) => {
   return (
     <ImageBackground
-    source={require("../../assets/probb.png")}
-    style={styles.general}
+      source={require("../../assets/probb.png")}
+      style={styles.general}
       resizeMethod="cover"
     >
       <View style={[styles.Card, { height: 504 }]}>
@@ -60,7 +60,7 @@ const SignUp = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
-      {/* </View> */}
+      {/* { </View> } */}
     </ImageBackground>
   );
 };

@@ -1,6 +1,6 @@
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { TabNavigator } from './TabNavigator';
-import Pasarela from '../screens/main/Pasarela';
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { TabNavigator } from "./TabNavigator";
+import Pasarela from "../screens/main/Pasarela";
 
 const MainStack = createNativeStackNavigator();
 

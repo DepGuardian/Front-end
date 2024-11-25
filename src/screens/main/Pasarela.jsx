@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { InfoCard } from "../../components/pasarela/InfoCard";
 import { ServiceButton } from "../../components/pasarela/ServiceButton";
+import PerfilBar from "../../components/common/PerfilBar";
 
 const QuickActionCard = ({ image, description, buttonText, onPress }) => (
   <View style={styles.actionCard}>
@@ -35,7 +36,7 @@ const Pasarela = ({ navigation }) => {
         onPress: () =>
           navigation.navigate("TabHome", {
             screen: "ReservasTab", // Aquí usamos el nombre de la tab donde está ToDoFamiliar
-          })
+          }),
       },
       {
         image: require("../../../assets/paqueteria.jpg"),
@@ -64,13 +65,14 @@ const Pasarela = ({ navigation }) => {
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
       >
+        <PerfilBar />
         <View style={styles.header}>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
             <Ionicons name="arrow-back" size={24} color="black" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Asumiendo que LogoBar es un componente funcional */}
           {/* <LogoBar /> */}
@@ -131,9 +133,9 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   welcomeText: {
-    fontSize: 20,
+    fontSize: 30,
     fontWeight: "bold",
-    textAlign: "center",
+    textAlign: "flex-start",
     marginBottom: 20,
   },
   servicesRow: {

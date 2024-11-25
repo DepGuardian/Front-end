@@ -1,28 +1,23 @@
-import React, { useState } from 'react';
-import {
-  ImageBackground,
-  View,
-  Text,
-  StyleSheet,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '../../components/common/Button';
-import { Input } from '../../components/common/Input';
-import { theme } from '../../theme';
+import React, { useState } from "react";
+import { ImageBackground, View, Text, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Button } from "../../components/common/Button";
+import { Input } from "../../components/common/Input";
+import { theme } from "../../theme";
 
 const SignUp = ({ navigation }) => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   return (
     <ImageBackground
-      source={require('../../../assets/probb.png')}
+      source={require("../../../assets/probb.png")}
       style={styles.background}
       resizeMode="cover"
     >
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.card}>
           <View style={styles.header}>
             <Text style={styles.title}>Deep Guardian</Text>
@@ -40,7 +35,9 @@ const SignUp = ({ navigation }) => {
               label="Contraseña"
               placeholder="Ingrese su contraseña"
               value={formData.password}
-              onChangeText={(text) => setFormData({ ...formData, password: text })}
+              onChangeText={(text) =>
+                setFormData({ ...formData, password: text })
+              }
               secureTextEntry
             />
           </View>
@@ -49,18 +46,24 @@ const SignUp = ({ navigation }) => {
             <Button
               label="Regresar"
               variant="secondary"
-              onPress={() => navigation.navigate('Landing')}
-              icon={{ name: 'return-down-back', position: 'left', family: 'Ionicons' }}
+              onPress={() => navigation.navigate("Landing")}
+              icon={{
+                name: "return-down-back",
+                position: "left",
+                family: "Ionicons",
+              }}
             />
             <Button
               label="Ingresar"
               variant="primary"
-              onPress={() => navigation.navigate('Pasarela')}
-              icon={{ name: 'sign-in', position: 'right' }}
+              onPress={() =>
+                navigation.navigate("MainApp", { screen: "Pasarela" })
+              }
+              icon={{ name: "sign-in", position: "right" }}
             />
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     </ImageBackground>
   );
 };
@@ -71,17 +74,17 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: theme.spacing.md,
+    justifyContent: "flex-end",
+    // paddingHorizontal: theme.spacing.md,
   },
   card: {
     backgroundColor: theme.colors.background,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.xl,
-    width: '100%',
+    width: "100%",
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: theme.spacing.xl,
   },
   title: {
@@ -94,8 +97,8 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: theme.spacing.xl,
   },
 });

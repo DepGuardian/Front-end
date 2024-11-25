@@ -12,6 +12,7 @@ import {
 import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import PerfilBar from "../../components/common/PerfilBar";
 
 const createCalendar = (year, month) => {
   const firstDay = new Date(year, month, 1);
@@ -225,32 +226,7 @@ const Reservas = () => {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.logo_deep_foto, { top: -5, zIndex: 2 }]}>
-        <Text
-          style={[
-            styles.textbuttonWhite,
-            {
-              position: "absolute",
-              left: 15,
-              fontSize: 21,
-              fontWeight: "700",
-              zIndex: 2,
-            },
-          ]}
-        >
-          DepGuardian
-        </Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Notifications")}
-          style={{ left: -20, marginTop: 0 }}
-        >
-          <ICONS2 name="notifications-outline" size={30} color="black" />
-        </TouchableOpacity>
-        <Image
-          source={require("../../../assets/perfil_deep_guardian.jpg")}
-          style={{ width: 50, height: 50, borderRadius: 25, marginRight: -280 }}
-        />
-      </View>
+      <PerfilBar />
 
       <View style={styles.nombre_pag}>
         <Text
@@ -258,7 +234,6 @@ const Reservas = () => {
             styles.textbuttonWhite,
             {
               position: "absolute",
-              top: 70,
               left: 10,
               fontSize: 24,
               fontWeight: "900",
@@ -542,9 +517,7 @@ const Reservas = () => {
         >
           <View style={styles.overlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.timeModalTitle}>
-                ¡Reserva registrada!
-              </Text>
+              <Text style={styles.timeModalTitle}>¡Reserva registrada!</Text>
             </View>
           </View>
         </Modal>
@@ -557,6 +530,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
+    padding: 20,
   },
   general: {
     flex: 1,

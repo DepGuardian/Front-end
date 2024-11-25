@@ -1,25 +1,29 @@
 // src/components/Card.js
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
-import { theme } from '../theme';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
+import { theme } from "../theme";
 
 const Card = ({ navigation, closeModal }) => {
-  const [propietarioCode, setPropietarioCode] = useState('');
+  const [propietarioCode, setPropietarioCode] = useState("");
 
   const handleSubmit = () => {
     if (propietarioCode.trim()) {
       closeModal();
-      navigation.navigate('MainApp', {
-        screen: 'Pasarela'
+      navigation.navigate("MainApp", {
+        screen: "Pasarela",
       });
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        Código de propietario
-      </Text>
+      <Text style={styles.title}>Código de propietario</Text>
 
       <TextInput
         style={styles.input}
@@ -32,10 +36,7 @@ const Card = ({ navigation, closeModal }) => {
         maxLength={6}
       />
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleSubmit}
-      >
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
         <Text style={styles.buttonText}>Listo</Text>
       </TouchableOpacity>
     </View>
@@ -45,13 +46,13 @@ const Card = ({ navigation, closeModal }) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.background,
-    width: '80%',
+    width: "80%",
     paddingVertical: 24,
     paddingHorizontal: 20,
     borderRadius: 16,
-    alignItems: 'center',
+    alignItems: "center",
     gap: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -61,36 +62,36 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   title: {
-    fontFamily: 'Poppins-Bold',
+    fontFamily: "Poppins-Bold",
     fontSize: 20,
-    color: '#000',
-    textAlign: 'center',
+    color: "#000",
+    textAlign: "center",
     marginBottom: 10,
   },
   input: {
-    width: '90%',
+    width: "90%",
     height: 45,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: "#E0E0E0",
     borderRadius: 8,
     paddingHorizontal: 15,
     fontSize: 16,
-    backgroundColor: '#FFFFFF',
-    fontFamily: 'Poppins-Regular',
+    backgroundColor: "#FFFFFF",
+    fontFamily: "Poppins-Regular",
   },
   button: {
     width: 100,
     height: 40,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 10,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontFamily: 'Poppins-Bold',
+    fontFamily: "Poppins-Bold",
   },
 });
 
