@@ -112,6 +112,23 @@ export const TabNavigator = () => {
       />
 
       <Tab.Screen
+        name="NotificationsTab"
+        component={Pagos}
+        options={{
+          title: "Notificaciones",
+          tabBarLabel: ({ focused, color }) => (
+            <Text
+              style={[
+                styles.tabBarLabel,
+                { color: focused ? "#000000" : "#757575" },
+              ]}
+            >
+              Pagos
+            </Text>
+          ),
+        }}
+      />
+      <Tab.Screen
         name="MenuTab"
         component={ToDoFamiliar}
         options={{
@@ -124,23 +141,6 @@ export const TabNavigator = () => {
               ]}
             >
               Menú
-            </Text>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="NotificationsTab"
-        component={Pagos}
-        options={{
-          title: "Notificaciones",
-          tabBarLabel: ({ focused, color }) => (
-            <Text
-              style={[
-                styles.tabBarLabel,
-                { color: focused ? "#000000" : "#757575" },
-              ]}
-            >
-              Notificaciones
             </Text>
           ),
         }}
