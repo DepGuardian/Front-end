@@ -12,6 +12,7 @@ import {
 import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import PerfilBar from "../../components/common/PerfilBar";
 
 // Obtén la fecha actual
 const today = new Date();
@@ -268,32 +269,7 @@ const handleStartHourSelection = (hour) => {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.logo_deep_foto, { top: 15, zIndex: 2 }]}>
-        <Text
-          style={[
-            styles.textbuttonWhite,
-            {
-              position: "absolute",
-              left: 25,
-              fontSize: 21,
-              fontWeight: "700",
-              zIndex: 2,
-            },
-          ]}
-        >
-          DepGuardian
-        </Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Notifications")}
-          style={{ left: 270, marginTop: 0 }}
-        >
-          <ICONS2 name="notifications-outline" size={30} color="black" />
-        </TouchableOpacity>
-        <Image
-          source={require("../../../assets/perfil_deep_guardian.jpg")}
-          style={{ width: 50, height: 50, borderRadius: 25, marginRight: 0 }}
-        />
-      </View>
+      <PerfilBar />
 
       <View style={styles.nombre_pag}>
         <Text
