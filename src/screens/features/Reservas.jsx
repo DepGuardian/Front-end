@@ -14,26 +14,29 @@ import ICONS2 from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import PerfilBar from "../../components/common/PerfilBar";
 
+// Obtén la fecha actual
+const today = new Date();
+const currentYear = today.getFullYear();
+const currentMonth = today.getMonth(); // Los meses son de 0 a 11
+const currentDay = today.getDate();
+const currentHour = today.getHours();
+const currentMinute = today.getMinutes();
+
 const createCalendar = (year, month) => {
   const firstDay = new Date(year, month, 1);
   const startDay = firstDay.getDay();
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-
   let days = [];
-
   for (let i = 0; i < startDay; i++) {
     days.push(0);
   }
-
   for (let i = 1; i <= daysInMonth; i++) {
     days.push(i);
   }
-
   while (days.length < 42) {
     days.push(0);
   }
-
   return days;
 };
 
@@ -51,6 +54,44 @@ const Reservas = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedDay, setSelectedDay] = useState(null);
+
+  const handleDaySelection = (day) => {
+    // Verifica que el día seleccionado no sea anterior a la fecha actual
+    if (
+      selectedYear < currentYear ||
+      (selectedYear === currentYear && selectedMonth < currentMonth) ||
+      (selectedYear === currentYear &&
+        selectedMonth === currentMonth &&
+        day < currentDay)
+    ) {
+      alert("No puedes seleccionar una fecha pasada.");
+    } else {
+      setSelectedDay(day); // Si la fecha es válida, la selecciona
+    }
+  };
+
+  const handleStartHourSelection = (hour) => {
+    // Si la fecha seleccionada es hoy, valida la hora
+    if (
+      selectedYear === currentYear &&
+      selectedMonth === currentMonth &&
+      selectedDay === currentDay
+    ) {
+      const [hourStr, period] = hour.split(" ");
+      const [hourNum, minuteNum] = hourStr.split(":").map(Number);
+      const hour24 = period === "PM" && hourNum !== 12 ? hourNum + 12 : hourNum; // Convierte a formato 24 horas
+
+      if (
+        hour24 < currentHour ||
+        (hour24 === currentHour && minuteNum < currentMinute)
+      ) {
+        alert("No puedes seleccionar una hora pasada.");
+        return;
+      }
+    }
+
+    setSelectedStartHour(hour); // Si la hora es válida, la selecciona
+  };
 
   const months = [
     "Enero",
@@ -177,6 +218,9 @@ const Reservas = () => {
     const contentHeight = event.nativeEvent.contentSize.height;
     const layoutHeight = event.nativeEvent.layoutMeasurement.height;
 
+    // Verificamos si la referencia está disponible antes de usar scrollToIndex
+    if (!startHourRef.current) return;
+
     // Si el usuario llega al final, reseteamos al inicio
     if (offsetY >= contentHeight - layoutHeight - 50) {
       startHourRef.current.scrollToIndex({
@@ -184,6 +228,7 @@ const Reservas = () => {
         animated: false,
       });
     }
+
     // Si el usuario llega al inicio, reseteamos al centro
     if (offsetY <= 50) {
       startHourRef.current.scrollToIndex({
@@ -195,14 +240,19 @@ const Reservas = () => {
   const startHourRef = useRef(null);
   const endHourRef = useRef(null);
   useEffect(() => {
-    // Al montar el componente, scrolleamos al centro para dar la impresión de scroll infinito
     if (startHourRef.current) {
-      startHourRef.current.scrollToIndex({
-        index: middleIndex,
-        animated: false,
-      });
+      setTimeout(() => {
+        try {
+          startHourRef.current.scrollToIndex({
+            index: middleIndex,
+            animated: false,
+          });
+        } catch (error) {
+          console.warn("Error during scrollToIndex in useEffect:", error);
+        }
+      }, 0);
     }
-  }, []);
+  }, [middleIndex]);
 
   const renderTimeOption = (hour, setSelectedHour) => (
     <TouchableOpacity
@@ -234,6 +284,7 @@ const Reservas = () => {
             styles.textbuttonWhite,
             {
               position: "absolute",
+              top: 10,
               left: 10,
               fontSize: 24,
               fontWeight: "900",
@@ -244,7 +295,7 @@ const Reservas = () => {
         </Text>
         <TouchableOpacity
           onPress={() => navigation.navigate("Notifications")}
-          style={{ left: 160, top: 55 }}
+          style={{ left: 290, top: 13 }}
         >
           <ICONS2 name="ticket-outline" size={30} color="black" />
         </TouchableOpacity>
@@ -356,7 +407,7 @@ const Reservas = () => {
                 <TouchableOpacity onPress={handlePrevMonth}>
                   <Text style={styles.arrowButton}>{"<"}</Text>
                 </TouchableOpacity>
-                <Text>{"        "}</Text>
+                <Text>{"  "}</Text>
                 <TouchableOpacity onPress={handleNextMonth}>
                   <Text style={styles.arrowButton}>{">"}</Text>
                 </TouchableOpacity>
@@ -393,7 +444,7 @@ const Reservas = () => {
                       styles.item,
                       item === selectedDay && { backgroundColor: "#d7feff" },
                     ]} // Cambia el fondo si es seleccionado
-                    onPress={() => item !== 0 && setSelectedDay(item)} // Solo selecciona los días válidos (no 0)
+                    onPress={() => item !== 0 && handleDaySelection(item)} // Solo selecciona los días válidos (no 0)
                   >
                     {item !== 0 && (
                       <Text
@@ -401,7 +452,7 @@ const Reservas = () => {
                           styles.itemText,
                           item === selectedDay && {
                             color: "#00cbd1",
-                            fontSize: 20,
+                            fontSize: 24,
                             fontWeight: "bold",
                           },
                         ]}
@@ -442,7 +493,7 @@ const Reservas = () => {
                   data={infiniteHours}
                   keyExtractor={(item, index) => index.toString()}
                   renderItem={({ item }) =>
-                    renderTimeOption(item, setSelectedStartHour)
+                    renderTimeOption(item, handleStartHourSelection)
                   }
                   getItemLayout={getItemLayout}
                   initialScrollIndex={middleIndex} // Empezamos en el centro
@@ -472,7 +523,7 @@ const Reservas = () => {
 
         {/* Modal para el selector de hora de fin */}
         <Modal visible={endHourModalVisible} animationType="fade" transparent>
-          <View style={styles.overlay}>
+          <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.timeModalTitle}>
                 Seleccione la hora de fin
@@ -515,7 +566,7 @@ const Reservas = () => {
           animationType="fade"
           transparent
         >
-          <View style={styles.overlay}>
+          <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.timeModalTitle}>¡Reserva registrada!</Text>
             </View>
@@ -530,7 +581,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
-    padding: 20,
   },
   general: {
     flex: 1,
@@ -576,6 +626,9 @@ const styles = StyleSheet.create({
   },
   textbuttonWhite: {
     color: "black",
+    marginRight: 5,
+    fontFamily: "Poppins-Regular",
+    fontSize: 20,
   },
   bottomBar: {
     flexDirection: "row",
@@ -613,9 +666,9 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   boldText: {
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 10,
+    fontWeight: "bold", // texto en negrita
+    fontSize: 14,
+    marginRight: 5,
   },
   modalText: {
     textAlign: "center",
@@ -659,14 +712,18 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   item: {
-    flex: 1,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
+    width: 29, // Ancho fijo para el botón del día
+    height: 29, // Alto fijo para el botón del día
+    margin: 8, // Espacio entre los botones
+    borderWidth: 1, // Borde fijo
+    borderColor: "white", // Color del borde
+    borderRadius: 5, // Bordes redondeados
+    alignItems: "center", // Centrado del contenido
+    justifyContent: "center", // Centrado vertical
+    backgroundColor: "#f4f4f4", // Color de fondo por defecto
   },
   itemText: {
-    fontSize: 16,
+    fontSize: 20,
   },
   selectButton: {
     backgroundColor: "#00cbd1",

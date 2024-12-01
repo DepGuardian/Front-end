@@ -35,7 +35,7 @@ const Pasarela = ({ navigation }) => {
         buttonText: "Ir a Reserva",
         onPress: () =>
           navigation.navigate("TabHome", {
-            screen: "ReservasTab", // Aquí usamos el nombre de la tab donde está ToDoFamiliar
+            screen: "ReservasTab",
           }),
       },
       {
@@ -43,14 +43,16 @@ const Pasarela = ({ navigation }) => {
         description:
           "Revisa si tus paquetes ya están disponibles en recepción:",
         buttonText: "Ir a Paquetería",
-        onPress: () => {},
+        onPress: () =>
+          navigation.navigate("TabHome", { screen: "NotificationsTab" }),
       },
       {
         image: require("../../../assets/pagos.jpg"),
         description:
           "Mantente informado respecto al pago de tus servicios y alquiler:",
         buttonText: "Ir a Pagos",
-        onPress: () => {},
+        onPress: () =>
+          navigation.navigate("TabHome", { screen: "NotificationsTab" }),
       },
     ];
 
@@ -83,18 +85,34 @@ const Pasarela = ({ navigation }) => {
         <InfoCard
           code="P201"
           nextPayment="31/10"
-          onChatPress={() => navigation.navigate("Chats", { screen: "Chat" })}
+          onChatPress={() =>
+            navigation.navigate("TabHome", { screen: "ChatsTab" })
+          }
         />
 
         <View style={styles.servicesRow}>
-          <ServiceButton icon="home" label="Alquiler" onPress={() => {}} />
+          <ServiceButton
+            icon="home"
+            label="Alquiler"
+            onPress={() =>
+              navigation.navigate("TabHome", { screen: "NotificationsTab" })
+            }
+          />
           <ServiceButton
             icon="bulb-outline"
             label="Luz"
             family="Ionicons"
-            onPress={() => {}}
+            onPress={() =>
+              navigation.navigate("TabHome", { screen: "NotificationsTab" })
+            }
           />
-          <ServiceButton icon="phone" label="Celular" onPress={() => {}} />
+          <ServiceButton
+            icon="phone"
+            label="Celular"
+            onPress={() =>
+              navigation.navigate("TabHome", { screen: "NotificationsTab" })
+            }
+          />
         </View>
 
         <TouchableOpacity

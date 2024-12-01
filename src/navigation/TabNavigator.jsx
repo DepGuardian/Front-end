@@ -39,6 +39,8 @@ export const TabNavigator = () => {
             case "MenuTab":
               iconName = focused ? "menu" : "menu-outline";
               break;
+            case "ChatsTab":
+              iconName = focused ? "chatbubble" : "chatbubble-outline";
           }
 
           return <Ionicons name={iconName} size={iconSize} color={color} />;
@@ -78,7 +80,7 @@ export const TabNavigator = () => {
         name="SocialTab"
         component={ToDoFamiliar}
         options={{
-          title: "Social",
+          title: "ToDoFamiliar",
           unmountOnBlur: true,
           tabBarLabel: ({ focused, color }) => (
             <Text
@@ -130,24 +132,6 @@ export const TabNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="MenuTab"
-        component={ToDoFamiliar}
-        options={{
-          title: "Menú",
-          tabBarLabel: ({ focused, color }) => (
-            <Text
-              style={[
-                styles.tabBarLabel,
-                { color: focused ? "#000000" : "#757575" },
-              ]}
-            >
-              Menú
-            </Text>
-          ),
-        }}
-      />
-
-      <Tab.Screen
         name="ChatsTab"
         component={Chats}
         options={{
@@ -163,10 +147,28 @@ export const TabNavigator = () => {
             </Text>
           ),
           tabBarIcon: ({ focused, color, size }) => {
-            let iconName = focused ? "chatbubble" : "chatbubble-outline"; // Icono de chats
+            let iconName = focused ? "chatbubble" : "chatbubble-outline";
             const iconSize = Platform.OS === "ios" ? size : size + 2;
             return <Ionicons name={iconName} size={iconSize} color={color} />;
           },
+        }}
+      />
+
+      <Tab.Screen
+        name="MenuTab"
+        component={ToDoFamiliar}
+        options={{
+          title: "Menú",
+          tabBarLabel: ({ focused, color }) => (
+            <Text
+              style={[
+                styles.tabBarLabel,
+                { color: focused ? "#000000" : "#757575" },
+              ]}
+            >
+              Menú
+            </Text>
+          ),
         }}
       />
     </Tab.Navigator>

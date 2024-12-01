@@ -10,6 +10,7 @@ import {
   TextInput,
   Alert,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Chats = ({ navigation }) => {
   const [chats, setChats] = useState([
@@ -61,19 +62,25 @@ const Chats = ({ navigation }) => {
   };
 
   const addNewChat = () => {
-    const chatDetails = fetchChatDetails(inputCode);
+    const chatDetails = fetchChatDetails(inputCode.trim());
     if (chatDetails) {
-      setChats((prevChats) => [
-        ...prevChats,
-        {
-          id: chatDetails.id,
-          name: chatDetails.name,
-          lastMessage: "",
-          unread: false,
-        },
-      ]);
-      setModalVisible(false);
-      setInputCode("");
+      const exists = chats.some((chat) => chat.id === chatDetails.id);
+      if (exists) {
+        Alert.alert("Advertencia", "Este chat ya existe en tu lista.");
+      } else {
+        setChats((prevChats) => [
+          ...prevChats,
+          {
+            id: chatDetails.id,
+            name: chatDetails.name,
+            lastMessage: "",
+            unread: false,
+          },
+        ]);
+        Alert.alert("Éxito", "El chat se ha agregado correctamente.");
+        setModalVisible(false);
+        setInputCode("");
+      }
     } else {
       Alert.alert("Error", "Código inválido. Intente nuevamente.");
     }
@@ -81,7 +88,10 @@ const Chats = ({ navigation }) => {
 
   const openChat = (chatId) => {
     const selectedChat = chats.find((chat) => chat.id === chatId);
-    navigation.navigate("Chat", { chat: selectedChat });
+    navigation.navigate("ChatsTab", {
+      screen: "Chat",
+      params: { chat: selectedChat },
+    });
   };
 
   const renderChatItem = ({ item }) => (

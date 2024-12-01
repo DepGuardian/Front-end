@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,21 +7,31 @@ import {
   FlatList,
   StyleSheet,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const Chat = ({ route }) => {
-  const { chat } = route.params;
-  const [messages, setMessages] = useState([
-    { id: "1", text: "Hola, ¿cómo estás?", sender: "other" },
-    { id: "2", text: "Todo bien, gracias. ¿Y tú?", sender: "me" },
-  ]);
+const Chat = ({ chat, goBack }) => {
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
 
-  const sendMessage = () => {
+  useEffect(() => {
+    const loadMessages = async () => {
+      const storedMessages = await AsyncStorage.getItem(`messages-${chat.id}`);
+      if (storedMessages) setMessages(JSON.parse(storedMessages));
+    };
+    loadMessages();
+  }, []);
+
+  const sendMessage = async () => {
     if (newMessage.trim()) {
-      setMessages([
+      const updatedMessages = [
         ...messages,
         { id: Date.now().toString(), text: newMessage, sender: "me" },
-      ]);
+      ];
+      setMessages(updatedMessages);
+      await AsyncStorage.setItem(
+        `messages-${chat.id}`,
+        JSON.stringify(updatedMessages)
+      );
       setNewMessage("");
     }
   };
@@ -33,17 +43,39 @@ const Chat = ({ route }) => {
         item.sender === "me" ? styles.myMessage : styles.otherMessage,
       ]}
     >
-      <Text style={styles.messageText}>{item.text}</Text>
+      <Text
+        style={
+          item.sender === "me" ? styles.myMessageText : styles.otherMessageText
+        }
+      >
+        {item.text}
+      </Text>
     </View>
   );
 
+  if (!chat) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ color: "red" }}>Error: Chat no encontrado.</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
+      <TouchableOpacity onPress={goBack} style={styles.backButton}>
+        <Text style={styles.backButtonText}>Atrás</Text>
+      </TouchableOpacity>
       <Text style={styles.chatTitle}>{chat.name}</Text>
       <FlatList
         data={messages}
         renderItem={renderMessageItem}
         keyExtractor={(item) => item.id}
+        ListEmptyComponent={() => (
+          <Text style={{ textAlign: "center", color: "#777", marginTop: 20 }}>
+            No hay mensajes todavía.
+          </Text>
+        )}
         style={styles.messagesList}
       />
       <View style={styles.inputContainer}>
@@ -72,8 +104,9 @@ const styles = StyleSheet.create({
     maxWidth: "70%",
   },
   myMessage: { backgroundColor: "#007bff", alignSelf: "flex-end" },
+  myMessageText: { color: "#fff" },
   otherMessage: { backgroundColor: "#f1f1f1", alignSelf: "flex-start" },
-  messageText: { color: "#fff" },
+  otherMessageText: { color: "#000" },
   inputContainer: {
     flexDirection: "row",
     padding: 10,
@@ -94,6 +127,14 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   sendButtonText: { color: "#fff" },
+  backButton: {
+    padding: 10,
+    backgroundColor: "#ccc",
+    borderRadius: 5,
+    alignSelf: "flex-start",
+    margin: 10,
+  },
+  backButtonText: { color: "#000", fontWeight: "bold" },
 });
 
 export default Chat;
