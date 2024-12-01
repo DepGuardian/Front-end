@@ -10,6 +10,7 @@ import Reservas from "../screens/features/Reservas";
 import ToDoFamiliar from "../screens/features/ToDoFamiliar";
 import Pasarela from "../screens/main/Pasarela";
 import Pagos from "../screens/features/Pagos";
+import Chats from "../screens/features/Chats";
 
 const Tab = createBottomTabNavigator();
 
@@ -143,6 +144,29 @@ export const TabNavigator = () => {
               Menú
             </Text>
           ),
+        }}
+      />
+
+      <Tab.Screen
+        name="ChatsTab"
+        component={Chats}
+        options={{
+          title: "Chats",
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={[
+                styles.tabBarLabel,
+                { color: focused ? "#000000" : "#757575" },
+              ]}
+            >
+              Chats
+            </Text>
+          ),
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName = focused ? "chatbubble" : "chatbubble-outline"; // Icono de chats
+            const iconSize = Platform.OS === "ios" ? size : size + 2;
+            return <Ionicons name={iconName} size={iconSize} color={color} />;
+          },
         }}
       />
     </Tab.Navigator>

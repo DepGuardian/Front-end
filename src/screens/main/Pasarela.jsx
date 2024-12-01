@@ -80,7 +80,11 @@ const Pasarela = ({ navigation }) => {
 
         <Text style={styles.welcomeText}>Buenas Noches, Vale!</Text>
 
-        <InfoCard code="P201" nextPayment="31/10" onChatPress={() => {}} />
+        <InfoCard
+          code="P201"
+          nextPayment="31/10"
+          onChatPress={() => navigation.navigate("Chats", { screen: "Chat" })}
+        />
 
         <View style={styles.servicesRow}>
           <ServiceButton icon="home" label="Alquiler" onPress={() => {}} />
@@ -97,7 +101,7 @@ const Pasarela = ({ navigation }) => {
           style={styles.plannerButton}
           onPress={() =>
             navigation.navigate("TabHome", {
-              screen: "SocialTab", // Aquí usamos el nombre de la tab donde está ToDoFamiliar
+              screen: "SocialTab",
             })
           }
         >
