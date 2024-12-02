@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
 export const InfoCard = ({ code, nextPayment, onChatPress }) => {
   return (
@@ -19,19 +19,19 @@ export const InfoCard = ({ code, nextPayment, onChatPress }) => {
 
 const styles = StyleSheet.create({
   infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: 15,
     gap: 10,
   },
   infoBox: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
   },
   infoText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
   },
 });

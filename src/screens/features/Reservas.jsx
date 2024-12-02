@@ -22,7 +22,6 @@ const currentDay = today.getDate();
 const currentHour = today.getHours();
 const currentMinute = today.getMinutes();
 
-
 const createCalendar = (year, month) => {
   const firstDay = new Date(year, month, 1);
   const startDay = firstDay.getDay();
@@ -56,35 +55,43 @@ const Reservas = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedDay, setSelectedDay] = useState(null);
 
-  
-const handleDaySelection = (day) => {
-  // Verifica que el día seleccionado no sea anterior a la fecha actual
-  if (
-    selectedYear < currentYear ||
-    (selectedYear === currentYear && selectedMonth < currentMonth) ||
-    (selectedYear === currentYear && selectedMonth === currentMonth && day < currentDay)
-  ) {
-    alert("No puedes seleccionar una fecha pasada.");
-  } else {
-    setSelectedDay(day); // Si la fecha es válida, la selecciona
-  }
-};
-
-const handleStartHourSelection = (hour) => {
-  // Si la fecha seleccionada es hoy, valida la hora
-  if (selectedYear === currentYear && selectedMonth === currentMonth && selectedDay === currentDay) {
-    const [hourStr, period] = hour.split(" ");
-    const [hourNum, minuteNum] = hourStr.split(":").map(Number);
-    const hour24 = period === "PM" && hourNum !== 12 ? hourNum + 12 : hourNum; // Convierte a formato 24 horas
-
-    if (hour24 < currentHour || (hour24 === currentHour && minuteNum < currentMinute)) {
-      alert("No puedes seleccionar una hora pasada.");
-      return;
+  const handleDaySelection = (day) => {
+    // Verifica que el día seleccionado no sea anterior a la fecha actual
+    if (
+      selectedYear < currentYear ||
+      (selectedYear === currentYear && selectedMonth < currentMonth) ||
+      (selectedYear === currentYear &&
+        selectedMonth === currentMonth &&
+        day < currentDay)
+    ) {
+      alert("No puedes seleccionar una fecha pasada.");
+    } else {
+      setSelectedDay(day); // Si la fecha es válida, la selecciona
     }
-  }
-  
-  setSelectedStartHour(hour); // Si la hora es válida, la selecciona
-};
+  };
+
+  const handleStartHourSelection = (hour) => {
+    // Si la fecha seleccionada es hoy, valida la hora
+    if (
+      selectedYear === currentYear &&
+      selectedMonth === currentMonth &&
+      selectedDay === currentDay
+    ) {
+      const [hourStr, period] = hour.split(" ");
+      const [hourNum, minuteNum] = hourStr.split(":").map(Number);
+      const hour24 = period === "PM" && hourNum !== 12 ? hourNum + 12 : hourNum; // Convierte a formato 24 horas
+
+      if (
+        hour24 < currentHour ||
+        (hour24 === currentHour && minuteNum < currentMinute)
+      ) {
+        alert("No puedes seleccionar una hora pasada.");
+        return;
+      }
+    }
+
+    setSelectedStartHour(hour); // Si la hora es válida, la selecciona
+  };
 
   const months = [
     "Enero",
@@ -210,10 +217,8 @@ const handleStartHourSelection = (hour) => {
     const offsetY = event.nativeEvent.contentOffset.y;
     const contentHeight = event.nativeEvent.contentSize.height;
     const layoutHeight = event.nativeEvent.layoutMeasurement.height;
-  
     // Verificamos si la referencia está disponible antes de usar scrollToIndex
     if (!startHourRef.current) return;
-  
     // Si el usuario llega al final, reseteamos al inicio
     if (offsetY >= contentHeight - layoutHeight - 50) {
       startHourRef.current.scrollToIndex({
@@ -221,7 +226,6 @@ const handleStartHourSelection = (hour) => {
         animated: false,
       });
     }
-    
     // Si el usuario llega al inicio, reseteamos al centro
     if (offsetY <= 50) {
       startHourRef.current.scrollToIndex({
@@ -623,7 +627,7 @@ const styles = StyleSheet.create({
   textbuttonWhite: {
     color: "black",
     marginRight: 5,
-    fontFamily: "Poppins-Regular", 
+    fontFamily: "Poppins-Regular",
     fontSize: 20,
   },
   bottomBar: {
@@ -663,8 +667,8 @@ const styles = StyleSheet.create({
   },
   boldText: {
     fontWeight: "bold", // texto en negrita
-      fontSize: 14,
-      marginRight: 5,
+    fontSize: 14,
+    marginRight: 5,
   },
   modalText: {
     textAlign: "center",
