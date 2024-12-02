@@ -25,11 +25,11 @@ const currentMinute = today.getMinutes();
 const createCalendar = (year, month) => {
   const firstDay = new Date(year, month, 1);
   const startDay = firstDay.getDay();
-
+  
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   let days = [];
   for (let i = 0; i < startDay; i++) {
-    days.push(0);
+    days.push(0); 
   }
   for (let i = 1; i <= daysInMonth; i++) {
     days.push(i);
@@ -217,10 +217,8 @@ const Reservas = () => {
     const offsetY = event.nativeEvent.contentOffset.y;
     const contentHeight = event.nativeEvent.contentSize.height;
     const layoutHeight = event.nativeEvent.layoutMeasurement.height;
-
     // Verificamos si la referencia está disponible antes de usar scrollToIndex
     if (!startHourRef.current) return;
-
     // Si el usuario llega al final, reseteamos al inicio
     if (offsetY >= contentHeight - layoutHeight - 50) {
       startHourRef.current.scrollToIndex({
@@ -228,7 +226,6 @@ const Reservas = () => {
         animated: false,
       });
     }
-
     // Si el usuario llega al inicio, reseteamos al centro
     if (offsetY <= 50) {
       startHourRef.current.scrollToIndex({
@@ -437,6 +434,7 @@ const Reservas = () => {
 
               <FlatList
                 data={createCalendar(selectedYear, selectedMonth)} // Los días generados
+                
                 numColumns={7} // 7 columnas para los días de la semana
                 renderItem={({ item }) => (
                   <TouchableOpacity
@@ -568,7 +566,9 @@ const Reservas = () => {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.timeModalTitle}>¡Reserva registrada!</Text>
+              <Text style={styles.timeModalTitle}>
+                ¡Reserva registrada!
+              </Text>
             </View>
           </View>
         </Modal>
@@ -749,6 +749,7 @@ const styles = StyleSheet.create({
   },
   selectedItem: {
     backgroundColor: "#d7feff",
+    
   },
 });
 
