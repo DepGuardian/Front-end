@@ -39,7 +39,7 @@ const SignIn = ({ navigation }) => {
     setLoading(true);
     try {
       const response = await fetch(
-        "http://192.168.8.179:3000/auth/registerResident",
+        "http://192.168.179.156:7091/auth/registerResident",
         {
           method: "POST",
           headers: {
@@ -57,11 +57,16 @@ const SignIn = ({ navigation }) => {
 
       console.log(data);
 
-      if (response.status === 201) {
+      if (response.ok) {
         setShowModal(false);
-        await storeUserData(data.data);
+        await storeUserData(
+          {
+            ...data.data,
+            tenantId: formData.tenantId
+          }
+        );
         navigation.navigate("MainApp", {
-          screen: "Pasarela",
+          screen: "Pasarela/+",
         });
       } else {
         const errorMessage = Array.isArray(data.message) 

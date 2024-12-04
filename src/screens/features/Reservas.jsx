@@ -1,975 +1,606 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
-  ScrollView,
   View,
   Text,
-  TouchableOpacity,
-  Image,
-  Modal,
-  FlatList,
   StyleSheet,
+  ScrollView,
+  TouchableOpacity,
   ActivityIndicator,
-} from "react-native";
-import ICONS from "react-native-vector-icons/FontAwesome";
-import ICONS2 from "react-native-vector-icons/Ionicons";
-import { useNavigation } from "@react-navigation/native";
-import PerfilBar from "../../components/common/PerfilBar";
+  Alert,
+  Platform,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Icon from 'react-native-vector-icons/Ionicons';
+import Header from '../../components/Header';
+import { getUserData } from '../../utils/storage';
 
-//tenant id:2 
-//logica para la integración con el backend
+const API_URL = 'http://192.168.179.156:7091';
 
+// Componente para mostrar un área común
+const CommonAreaCard = ({ area, onSelect, isSelected }) => (
+  <TouchableOpacity 
+    style={[styles.areaCard, isSelected && styles.areaCardSelected]}
+    onPress={() => onSelect(area)}
+  >
+    <View style={styles.areaIcon}>
+      <Icon 
+        name={area.name.toLowerCase().includes('juego') ? 'game-controller' : 'business'} 
+        size={24} 
+        color={isSelected ? '#FFF' : '#007AFF'} 
+      />
+    </View>
+    <View style={styles.areaInfo}>
+      <Text style={[styles.areaName, isSelected && styles.areaNameSelected]}>
+        {area.name}
+      </Text>
+      <Text style={[styles.areaDescription, isSelected && styles.areaDescriptionSelected]}>
+        {area.description}
+      </Text>
+      <View style={styles.areaCapacity}>
+        <Icon 
+          name="people" 
+          size={16} 
+          color={isSelected ? '#FFF' : '#666'} 
+        />
+        <Text style={[styles.capacityText, isSelected && styles.capacityTextSelected]}>
+          Capacidad: {area.capacity} personas
+        </Text>
+      </View>
+    </View>
+  </TouchableOpacity>
+);
 
+// Componente para mostrar una reserva existente
+const ReservationCard = ({ reservation, onCancel, commonAreas }) => {
+  const area = commonAreas.find(a => a._id === reservation.id_common_area);
+  const startTime = new Date(reservation.time_interval.start);
+  const endTime = new Date(reservation.time_interval.end);
 
-//
-
-// Obtén la fecha actual
-const today = new Date();
-const currentYear = today.getFullYear();
-const currentMonth = today.getMonth(); // Los meses son de 0 a 11
-const currentDay = today.getDate();
-const currentHour = today.getHours();
-const currentMinute = today.getMinutes();
-
-const createCalendar = (year, month) => {
-  const firstDay = new Date(year, month, 1);
-  const startDay = firstDay.getDay();
-  
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  let days = [];
-  for (let i = 0; i < startDay; i++) {
-    days.push(0); 
-  }
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push(i);
-  }
-  while (days.length < 42) {
-    days.push(0);
-  }
-  return days;
+  return (
+    <View style={styles.reservationCard}>
+      <View style={styles.reservationHeader}>
+        <Text style={styles.reservationAreaName}>{area?.name}</Text>
+        <TouchableOpacity 
+          style={styles.cancelButton}
+          onPress={() => onCancel(reservation)}
+        >
+          <Icon name="close-circle" size={24} color="#FF3B30" />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.reservationTime}>
+        <Icon name="time-outline" size={20} color="#666" />
+        <Text style={styles.timeText}>
+          {startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - 
+          {endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </Text>
+      </View>
+      <Text style={styles.reservationDate}>
+        {startTime.toLocaleDateString()}
+      </Text>
+    </View>
+  );
 };
 
-const getItemLayout = (data, index) => ({
-  length: 50,
-  offset: 50 * index,
-  index,
-});
-
-const Reservas = () => {
-  const navigation = useNavigation();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedDay, setSelectedDay] = useState(null);
+const ReservationsScreen = () => {
+  const [userData, setUserData] = useState(null);
   const [commonAreas, setCommonAreas] = useState([]);
+  const [selectedArea, setSelectedArea] = useState(null);
+  const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedReservation, setSelectedReservation] = useState(null); // Reserva seleccionada
-  const [reservations, setReservations] = useState([]);// Almacena las áreas comunes
- 
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedStartTime, setSelectedStartTime] = useState(new Date());
+  const [selectedEndTime, setSelectedEndTime] = useState(new Date());
 
   useEffect(() => {
-    // Fetch para obtener las áreas comunes
-    const fetchCommonAreas = async () => {
-      console.log("fetchCommonAreas");
-      try {
-        const response = await fetch("http://192.168.8.179:3000/commonarea/all?tenantId=2");
-        console.log("response", response);
-        const result = await response.json();
-
-        console.log("result", result);
-        if (result.status === 200) {
-          console.log("result.data", result.data);
-          setCommonAreas(result.data); // Guardamos los datos en el estado
-        } else {
-          console.error("Error al obtener las áreas comunes:", result.errorMessage);
-        }
-      } catch (error) {
-        console.error("Error de red:", error);
-      } finally {
-        setLoading(false); // Terminamos la carga
-      }
-    };
-
-    fetchCommonAreas();
+    loadInitialData();
   }, []);
 
-  const createReservation = async (reservationData) => {
+  const loadInitialData = async () => {
     try {
-      const response = await fetch('http://192.168.8.179:3000/reservation?tenantId=2', {
+      const user = await getUserData();
+      setUserData(user);
+      await Promise.all([
+        fetchCommonAreas(user.tenantId),
+        fetchReservations(user.tenantId)
+      ]);
+    } catch (error) {
+      console.error('Error loading initial data:', error);
+      Alert.alert('Error', 'No se pudo cargar la información inicial');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCommonAreas = async (tenantId) => {
+    try {
+      const response = await fetch(`${API_URL}/commonarea/all?tenantId=${tenantId}`);
+      const data = await response.json();
+      if (data.status === 200) {
+        setCommonAreas(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching common areas:', error);
+      Alert.alert('Error', 'No se pudieron cargar las áreas comunes');
+    }
+  };
+
+  const fetchReservations = async (tenantId) => {
+    try {
+      const response = await fetch(`${API_URL}/reservation?tenantId=${tenantId}`);
+      const data = await response.json();
+      if (data.status === 200) {
+        setReservations(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching reservations:', error);
+      Alert.alert('Error', 'No se pudieron cargar las reservas');
+    }
+  };
+
+  const handleReservation = async () => {
+    if (!selectedArea) {
+      Alert.alert('Error', 'Por favor seleccione un área común');
+      return;
+    }
+
+    const startDateTime = new Date(selectedDate);
+    startDateTime.setHours(selectedStartTime.getHours(), selectedStartTime.getMinutes());
+    
+    const endDateTime = new Date(selectedDate);
+    endDateTime.setHours(selectedEndTime.getHours(), selectedEndTime.getMinutes());
+
+    if (endDateTime <= startDateTime) {
+      Alert.alert('Error', 'La hora de fin debe ser posterior a la hora de inicio');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/reservation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'accept': 'application/json'
         },
-        body: JSON.stringify(reservationData),
+        body: JSON.stringify({
+          id_common_area: selectedArea._id,
+          id_host: userData._id,
+          start_time: startDateTime.toISOString(),
+          end_time: endDateTime.toISOString(),
+          tenantId: userData.tenantId
+        })
       });
-  
-      if (!response.ok) {
+
+      if (response.ok) {
+        Alert.alert('Éxito', 'Reserva creada correctamente');
+        await fetchReservations(userData.tenantId);
+        setSelectedArea(null);
+      } else {
         throw new Error('Error al crear la reserva');
       }
-  
-      const data = await response.json();
-      return data;
     } catch (error) {
-      console.error('Error:', error);
-      throw error;
+      console.error('Error creating reservation:', error);
+      Alert.alert('Error', 'No se pudo crear la reserva');
     }
   };
 
-  const handleOpenModalReservation = (reservation) => {
-    setSelectedReservation(reservation); // Establece la reserva seleccionada
-    setModalVisible(true); // Muestra el modal
-  };
+  const handleCancelReservation = async (reservation) => {
+    Alert.alert(
+      'Cancelar Reserva',
+      '¿Está seguro que desea cancelar esta reserva?',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Sí',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const response = await fetch(`${API_URL}/reservation`, {
+                method: 'DELETE',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'accept': 'application/json'
+                },
+                body: JSON.stringify({
+                  id: reservation._id,
+                  tenantId: userData.tenantId
+                })
+              });
 
-  const handleCloseModalReservation = () => {
-    setModalVisible(false);
-    setSelectedReservation(null); // Limpia la reserva seleccionada
-  };
-
-  const handleDaySelection = (day) => {
-    // Verifica que el día seleccionado no sea anterior a la fecha actual
-    if (
-      selectedYear < currentYear ||
-      (selectedYear === currentYear && selectedMonth < currentMonth) ||
-      (selectedYear === currentYear &&
-        selectedMonth === currentMonth &&
-        day < currentDay)
-    ) {
-      alert("No puedes seleccionar una fecha pasada.");
-    } else {
-      setSelectedDay(day); // Si la fecha es válida, la selecciona
-    }
-  };
-
-  const handleStartHourSelection = (hour) => {
-    // Si la fecha seleccionada es hoy, valida la hora
-    if (
-      selectedYear === currentYear &&
-      selectedMonth === currentMonth &&
-      selectedDay === currentDay
-    ) {
-      const [hourStr, period] = hour.split(" ");
-      const [hourNum, minuteNum] = hourStr.split(":").map(Number);
-      const hour24 = period === "PM" && hourNum !== 12 ? hourNum + 12 : hourNum; // Convierte a formato 24 horas
-
-      if (
-        hour24 < currentHour ||
-        (hour24 === currentHour && minuteNum < currentMinute)
-      ) {
-        alert("No puedes seleccionar una hora pasada.");
-        return;
-      }
-    }
-
-    setSelectedStartHour(hour); // Si la hora es válida, la selecciona
-  };
-
-  const months = [
-    "Enero",
-    "Febrero",
-    "Marzo",
-    "Abril",
-    "Mayo",
-    "Junio",
-    "Julio",
-    "Agosto",
-    "Septiembre",
-    "Octubre",
-    "Noviembre",
-    "Diciembre",
-  ];
-  const years = Array.from(
-    { length: 10 },
-    (_, index) => new Date().getFullYear() - index
-  );
-
-  const getDaysInMonth = (month, year) => {
-    const date = new Date(year, month + 1, 0);
-    return Array.from({ length: date.getDate() }, (_, i) => i + 1);
-  };
-
-  const handleOpenModal = () => {
-    setModalVisible(true);
-  };
-
-  const handleCloseModal = () => {
-    setModalVisible(false);
-  };
-
-  const handleOpenDateModal = () => {
-    setModalVisible(false);
-    setDateModalVisible(true);
-  };
-
-  const handleCloseDateModal = () => {
-    setDateModalVisible(false);
-  };
-
-  const handleSelectDate = () => {
-    if (selectedDay && selectedMonth !== null && selectedYear !== null) {
-      setSelectedDate(
-        `${selectedDay} de ${months[selectedMonth]} del ${selectedYear}`
-      );
-      handleCloseDateModal();
-    } else {
-      alert("Por favor selecciona un día, mes y año.");
-    }
-  };
-
-  const daysInMonth = getDaysInMonth(selectedMonth, selectedYear);
-  const handlePrevMonth = () => {
-    if (selectedMonth === 0) {
-      setSelectedMonth(11);
-      setSelectedYear(selectedYear - 1);
-    } else {
-      setSelectedMonth(selectedMonth - 1);
-    }
-  };
-
-  const handleNextMonth = () => {
-    if (selectedMonth === 11) {
-      setSelectedMonth(0);
-      setSelectedYear(selectedYear + 1);
-    } else {
-      setSelectedMonth(selectedMonth + 1);
-    }
-  };
-
-  const handlePrevYear = () => {
-    setSelectedYear(selectedYear - 1);
-  };
-
-  const handleNextYear = () => {
-    setSelectedYear(selectedYear + 1);
-  };
-
-  const convertTo24Hour = (time) => {
-    const [rawTime, period] = time.split(' ');
-    let [hours, minutes] = rawTime.split(':');
-    hours = parseInt(hours);
-  
-    if (period === 'PM' && hours !== 12) {
-      hours += 12;
-    } else if (period === 'AM' && hours === 12) {
-      hours = 0;
-    }
-  
-    return `${String(hours).padStart(2, '0')}:00`;
-  };
-
-
-
-  const handleCloseEndHourModal = async () => {
-    try {
-      // Format the selected date and times
-      const formattedDate = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
-      
-      // Convertir las horas a formato 24h
-      const startTime = convertTo24Hour(selectedStartHour);
-      const endTime = convertTo24Hour(selectedEndHour);
-      
-      const startDateTime = `${formattedDate}T${startTime}:00.000Z`;
-      const endDateTime = `${formattedDate}T${endTime}:00.000Z`;
-  
-      // Prepare the reservation data
-      const reservationData = {
-        id_common_area: selectedReservation._id,
-        id_host: "673026ddcf7eef24b6656b40",
-        start_time: startDateTime,
-        end_time: endDateTime,
-        tenantId: "2"
-      };
-  
-      console.log('Reservation Data:', reservationData); // Para debugging
-  
-      // Send the POST request
-      await createReservation(reservationData);
-  
-      // Close the end hour modal and show confirmation
-      setEndHourModalVisible(false);
-      setConfirmationModalVisible(true);
-  
-      // Hide confirmation modal after a delay
-      setTimeout(() => {
-        setConfirmationModalVisible(false);
-        handleCloseModalReservation();
-      }, 2000);
-  
-    } catch (error) {
-      console.error('Error details:', error); // Para debugging
-      Alert.alert(
-        "Error",
-        "No se pudo crear la reserva. Por favor intente nuevamente.",
-        [{ text: "OK" }]
-      );
-    }
-  };
-  const hours = [
-    "08:00 AM",
-    "09:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "01:00 PM",
-    "02:00 PM",
-    "03:00 PM",
-    "04:00 PM",
-    "05:00 PM",
-    "06:00 PM",
-    "07:00 PM",
-    "08:00 PM",
-    "09:00 PM",
-    "10:00 PM",
-    "11:00 PM",
-    "12:00 AM",
-    "01:00 AM",
-    "02:00 AM",
-    "03:00 AM",
-    "04:00 AM",
-    "05:00 AM",
-    "06:00 AM",
-    "07:00 AM",
-  ];
-  const [startHourModalVisible, setStartHourModalVisible] = useState(false);
-  const [endHourModalVisible, setEndHourModalVisible] = useState(false);
-  const [selectedStartHour, setSelectedStartHour] = useState("08:00 AM");
-  const [selectedEndHour, setSelectedEndHour] = useState("09:00 AM");
-  const [confirmationModalVisible, setConfirmationModalVisible] =
-    useState(false);
-  const infiniteHours = [...hours, ...hours, ...hours];
-  const middleIndex = hours.length;
-  const handleScroll = (event) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const contentHeight = event.nativeEvent.contentSize.height;
-    const layoutHeight = event.nativeEvent.layoutMeasurement.height;
-    // Verificamos si la referencia está disponible antes de usar scrollToIndex
-    if (!startHourRef.current) return;
-    // Si el usuario llega al final, reseteamos al inicio
-    if (offsetY >= contentHeight - layoutHeight - 50) {
-      startHourRef.current.scrollToIndex({
-        index: middleIndex,
-        animated: false,
-      });
-    }
-
-    const ConfirmationModal = () => (
-      <Modal
-        visible={confirmationModalVisible}
-        animationType="fade"
-        transparent
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.timeModalTitle}>
-              ¡Reserva registrada exitosamente!
-            </Text>
-            {/* You might want to add additional details here */}
-          </View>
-        </View>
-      </Modal>
-    );
-
-
-    // Si el usuario llega al inicio, reseteamos al centro
-    if (offsetY <= 50) {
-      startHourRef.current.scrollToIndex({
-        index: middleIndex,
-        animated: false,
-      });
-    }
-  };
-  const startHourRef = useRef(null);
-  const endHourRef = useRef(null);
-  useEffect(() => {
-    if (startHourRef.current) {
-      setTimeout(() => {
-        try {
-          startHourRef.current.scrollToIndex({
-            index: middleIndex,
-            animated: false,
-          });
-        } catch (error) {
-          console.warn("Error during scrollToIndex in useEffect:", error);
+              if (response.ok) {
+                await fetchReservations(userData.tenantId);
+                Alert.alert('Éxito', 'Reserva cancelada correctamente');
+              } else {
+                throw new Error('Error al cancelar la reserva');
+              }
+            } catch (error) {
+              console.error('Error canceling reservation:', error);
+              Alert.alert('Error', 'No se pudo cancelar la reserva');
+            }
+          }
         }
-      }, 0);
-    }
-  }, [middleIndex]);
+      ]
+    );
+  };
 
-  const renderTimeOption = (hour, setSelectedHour) => (
-    <TouchableOpacity
-      style={[
-        { height: 50, justifyContent: "center", alignItems: "center" },
-        styles.itemContainer,
-        (hour === selectedStartHour || hour === selectedEndHour) &&
-          styles.selectedItem,
-      ]}
-      onPress={() => setSelectedHour(hour)}
-    >
-      <Text style={styles.itemText}>{hour}</Text>
-    </TouchableOpacity>
-  );
-
-  const getItemLayout = (data, index) => ({
-    length: 50,
-    offset: 50 * index,
-    index,
-  });
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Header userData={userData} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Cargando reservas...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <PerfilBar />
-
-      <View style={styles.nombre_pag}>
-        <Text
-          style={[
-            styles.textbuttonWhite,
-            {
-              position: "absolute",
-              top: 10,
-              left: 10,
-              fontSize: 24,
-              fontWeight: "900",
-            },
-          ]}
-        >
-          Reserva un área común
-        </Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Notifications")}
-          style={{ left: 290, top: 13 }}
-        >
-          <ICONS2 name="ticket-outline" size={30} color="black" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={[styles.Card_reservas, { height: 645 }]}>
-      {loading ? (
-  <ActivityIndicator size="large" color="#00cbd1" /> // Indicador de carga mientras se obtienen los datos
-) : (
-  <ScrollView contentContainerStyle={{ paddingVertical: 10 }} showsVerticalScrollIndicator={false}>
-    {commonAreas.length > 0 ? (
-      commonAreas.map((area) => (
-        <View key={area._id} style={styles.Card_reservas_ejemplo}>
-          <Image
-            source={require("../../../assets/sala_juegos.jpg")} // Cambia a tu lógica para la imagen
-            style={{
-              width: 150,
-              height: 130,
-              borderRadius: 40,
-              borderTopRightRadius: 0,
-              borderBottomRightRadius: 0,
-            }}
-          />
-          <Text
-            style={[
-              styles.textbuttonWhite,
-              {
-                position: "absolute",
-                top: 4,
-                left: 170,
-                fontSize: 23,
-              },
-            ]}
-          >
-            {area.name} {/* Muestra el nombre del área común */}
-          </Text>
-          <TouchableOpacity
-            style={[
-              styles.buttonBlack_ch,
-              {
-                position: "absolute",
-                bottom: 7,
-                left: 150,
-              },
-            ]}
-            onPress={() => handleOpenModalReservation(area)}
-          >
-            <Text style={styles.textbuttonBlack_ch}>Ver disponibilidad</Text>
-            <ICONS name="arrow-right" size={12} color="white" />
-          </TouchableOpacity>
-        </View>
-      ))
-    ) : (
-      <Text style={{ textAlign: "center", marginTop: 20 }}>No hay áreas comunes disponibles.</Text>
-    )}
-  </ScrollView>
-)}
-
-{/* Modal de disponibilidad */}
-{selectedReservation && (
-  <Modal
-    transparent={true}
-    visible={modalVisible}
-    animationType="fade"
-    onRequestClose={handleCloseModalReservation}
-  >
-    <View style={styles.modalOverlay}>
-      <View style={styles.modalContent}>
-        <Image
-          source={require("../../../assets/sala_juegos.jpg")}
-          style={styles.modalImage}
-        />
-        <View style={styles.infoRow}>
-          <Text style={styles.boldText}>Estado actual:</Text>
-          <Text>{selectedReservation.status}</Text>
-          <Text style={styles.boldText}> Capacidad:</Text>
-          <Text>{selectedReservation.capacity}</Text>
-        </View>
-        <Text style={styles.modalText}>
-          {selectedReservation.description}
-        </Text>
-        <TouchableOpacity
-          onPress={handleOpenDateModal}
-          style={styles.closeButton}
-        >
-          <Text style={styles.closeButtonText}>Reservar</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </Modal>
-)}
-
-
-<Modal
-  transparent={true}
-  visible={dateModalVisible}
-  animationType="fade"
-  onRequestClose={handleCloseDateModal}
->
-  <View style={styles.modalOverlay}>
-    <View style={[styles.modalContent, { maxHeight: "80%" }]}>
-      <Text style={styles.boldText}>Seleccionar Fecha</Text>
-      <View style={styles.dateSelectionRow}>
-        <TouchableOpacity onPress={handlePrevYear}>
-          <Text style={styles.arrowButton}>{"<"}</Text>
-        </TouchableOpacity>
-        <Text style={styles.label}>
-          {months[selectedMonth]} {selectedYear}
-        </Text>
-        <TouchableOpacity onPress={handleNextYear}>
-          <Text style={styles.arrowButton}>{">"}</Text>
-        </TouchableOpacity>
-        <Text>{"                        "}</Text>
-        <TouchableOpacity onPress={handlePrevMonth}>
-          <Text style={styles.arrowButton}>{"<"}</Text>
-        </TouchableOpacity>
-        <Text>{"  "}</Text>
-        <TouchableOpacity onPress={handleNextMonth}>
-          <Text style={styles.arrowButton}>{">"}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Días de la semana en una fila */}
-      <View
-        style={[
-          styles.weekDaysRow,
-          { flexDirection: "row", justifyContent: "space-between" },
-        ]}
+    <SafeAreaView style={styles.container}>
+      <Header userData={userData} />
+      
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
       >
-        {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map(
-          (day, index) => (
-            <Text
-              key={index}
-              style={[
-                styles.weekDayText,
-                { flex: 1, textAlign: "center" },
-              ]}
-            >
-              {day}
-            </Text>
-          )
-        )}
-      </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Áreas Comunes</Text>
+          {commonAreas.map(area => (
+            <CommonAreaCard
+              key={area._id}
+              area={area}
+              onSelect={setSelectedArea}
+              isSelected={selectedArea?._id === area._id}
+            />
+          ))}
+        </View>
 
-      <FlatList
-        data={createCalendar(selectedYear, selectedMonth)}
-        numColumns={7}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[
-              styles.item,
-              item === selectedDay && { backgroundColor: "#d7feff" },
-            ]}
-            onPress={() => item !== 0 && handleDaySelection(item)}
-          >
-            {item !== 0 && (
-              <Text
-                style={[
-                  styles.itemText,
-                  item === selectedDay && {
-                    color: "#00cbd1",
-                    fontSize: 19,
-                    fontWeight: "bold",
-                  },
-                ]}
+        {selectedArea && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Nueva Reserva</Text>
+            <View style={styles.dateTimeContainer}>
+              <TouchableOpacity 
+                style={styles.datePickerButton}
+                onPress={() => setShowStartPicker(true)}
               >
-                {item}
-              </Text>
-            )}
-          </TouchableOpacity>
+                <Icon name="calendar-outline" size={24} color="#007AFF" />
+                <Text style={styles.dateTimeText}>
+                  {selectedDate.toLocaleDateString()}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={styles.timePickersContainer}>
+                <TouchableOpacity 
+                  style={styles.timePickerButton}
+                  onPress={() => setShowStartPicker(true)}
+                >
+                  <Icon name="time-outline" size={24} color="#007AFF" />
+                  <Text style={styles.dateTimeText}>
+                    {selectedStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                </TouchableOpacity>
+
+                <Text style={styles.timeSeperator}>hasta</Text>
+
+                <TouchableOpacity 
+                  style={styles.timePickerButton}
+                  onPress={() => setShowEndPicker(true)}
+                >
+                  <Icon name="time-outline" size={24} color="#007AFF" />
+                  <Text style={styles.dateTimeText}>
+                    {selectedEndTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity 
+                style={styles.reserveButton}
+                onPress={handleReservation}
+              >
+                <Icon name="calendar-check" size={24} color="#FFF" />
+                <Text style={styles.reserveButtonText}>Reservar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
-        keyExtractor={(item, index) => index.toString()}
-      />
 
-      <TouchableOpacity
-        onPress={() => {
-          if (!selectedDay) {
-            Alert.alert('Error', 'Por favor seleccione una fecha');
-            return;
-          }
-          setDateModalVisible(false);
-          setStartHourModalVisible(true);
-        }}
-        style={styles.selectButton}
-      >
-        <Text style={styles.selectButtonText}>Horario</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Ocupados</Text>
+          {reservations.length > 0 ? (
+            reservations.map(reservation => (
+              <ReservationCard
+                key={reservation._id}
+                reservation={reservation}
+                onCancel={handleCancelReservation}
+                commonAreas={commonAreas}
+              />
+            ))
+          ) : (
+            <View style={styles.emptyStateContainer}>
+              <Icon name="calendar-outline" size={48} color="#CCC" />
+              <Text style={styles.emptyStateText}>No hay reservas</Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
 
-{/* Modal de hora de inicio */}
-<Modal visible={startHourModalVisible} animationType="fade" transparent>
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalContent}>
-      <Text style={styles.timeModalTitle}>
-        Seleccione la hora de inicio
-      </Text>
-
-      <View style={{ height: 150 }}>
-        <FlatList
-          ref={startHourRef}
-          data={infiniteHours}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) =>
-            renderTimeOption(item, handleStartHourSelection)
-          }
-          getItemLayout={getItemLayout}
-          initialScrollIndex={middleIndex}
-          showsVerticalScrollIndicator={false}
-          snapToInterval={50}
-          snapToAlignment="center"
-          decelerationRate="fast"
-          pagingEnabled
-          contentContainerStyle={{ paddingVertical: 50 }}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        />
-      </View>
-
-      <TouchableOpacity
-        style={styles.closeButton}
-        onPress={() => {
-          if (!selectedStartHour) {
-            Alert.alert('Error', 'Por favor seleccione una hora de inicio');
-            return;
-          }
-          setStartHourModalVisible(false);
-          setEndHourModalVisible(true);
-        }}
-      >
-        <Text style={styles.closeButtonText}>Siguiente</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
-
-{/* Modal para el selector de hora de fin */}
-<Modal visible={endHourModalVisible} animationType="fade" transparent>
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalContent}>
-      <Text style={styles.timeModalTitle}>
-        Seleccione la hora de fin
-      </Text>
-
-      <View style={{ height: 150 }}>
-        <FlatList
-          ref={endHourRef}
-          data={infiniteHours}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) =>
-            renderTimeOption(item, setSelectedEndHour)
-          }
-          getItemLayout={getItemLayout}
-          initialScrollIndex={middleIndex}
-          showsVerticalScrollIndicator={false}
-          snapToInterval={50}
-          snapToAlignment="center"
-          decelerationRate="fast"
-          pagingEnabled
-          contentContainerStyle={{ paddingVertical: 50 }}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        />
-      </View>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={() => {
-            setEndHourModalVisible(false);
-            setSelectedEndHour(null);
+      {(showStartPicker || showEndPicker) && (
+        <DateTimePicker
+          value={showStartPicker ? selectedStartTime : selectedEndTime}
+          mode="time"
+          is24Hour={true}
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={(event, selectedTime) => {
+            if (Platform.OS === 'android') {
+              setShowStartPicker(false);
+              setShowEndPicker(false);
+            }
+            if (selectedTime) {
+              if (showStartPicker) {
+                setSelectedStartTime(selectedTime);
+                setShowStartPicker(false);
+                setShowEndPicker(true);
+              } else {
+                setSelectedEndTime(selectedTime);
+                setShowEndPicker(false);
+              }
+            }
           }}
-        >
-          <Text style={styles.cancelButtonText}>Cancelar</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.confirmButton}
-          onPress={handleCloseEndHourModal}
-        >
-          <Text style={styles.confirmButtonText}>Confirmar Reserva</Text>
-        </TouchableOpacity>
-      </View>
-
-
-    </View>
-  </View>
-</Modal>
-
-{/* Modal de confirmación de reserva */}
-<Modal
-  visible={confirmationModalVisible}
-  animationType="fade"
-  transparent
->
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalContent}>
-      <Text style={styles.timeModalTitle}>
-        ¡Reserva registrada!
-      </Text>
-      <Text style={styles.modalText}>
-        Fecha: {selectedDay}/{selectedMonth + 1}/{selectedYear}
-      </Text>
-      <Text style={styles.modalText}>
-        Horario: {selectedStartHour} - {selectedEndHour}
-      </Text>
-    </View>
-  </View>
-</Modal>
-      </View>
-    </View>
+        />
+      )}
+    </SafeAreaView>
   );
 };
+
+export default ReservationsScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: '#F6F6F6',
   },
-  general: {
+  scrollView: {
     flex: 1,
   },
-  logo_deep_foto: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 15,
-    paddingTop: 25,
-  },
-  nombre_pag: {
-    marginVertical: 10,
-    paddingHorizontal: 15,
-  },
-  Card_reservas: {
+  loadingContainer: {
     flex: 1,
-    paddingHorizontal: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  Card_reservas_ejemplo: {
-    flexDirection: "row",
-    backgroundColor: "white",
-    borderRadius: 40,
-    marginVertical: 8,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
   },
-  buttonBlack_ch: {
-    backgroundColor: "black",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
-  textbuttonBlack_ch: {
-    color: "white",
-    fontSize: 12,
-  },
-  textbuttonWhite: {
-    color: "black",
-    marginRight: 5,
-    fontFamily: "Poppins-Regular",
-    fontSize: 20,
-  },
-  bottomBar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    backgroundColor: "white",
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
-  },
-  // Estilos para los modales
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    width: "90%",
-    backgroundColor: "white",
-    borderRadius: 15,
+  section: {
     padding: 20,
-    alignItems: "center",
   },
-  modalImage: {
-    width: "100%",
-    height: 200,
-    borderRadius: 10,
-    marginBottom: 15,
-  },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: 15,
-  },
-  boldText: {
-    fontWeight: "bold", // texto en negrita
-    fontSize: 14,
-    marginRight: 5,
-  },
-  modalText: {
-    textAlign: "center",
-    marginBottom: 15,
-  },
-  closeButton: {
-    backgroundColor: "#00cbd1",
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  closeButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  dateSelectionRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    marginVertical: 15,
-  },
-  arrowButton: {
-    fontSize: 24,
-    padding: 10,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  weekDaysRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10,
-    width: "100%",
-  },
-  weekDayText: {
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  item: {
-    width: 29, // Ancho fijo para el botón del día
-    height: 29, // Alto fijo para el botón del día
-    margin: 8, // Espacio entre los botones
-    borderWidth: 1, // Borde fijo
-    borderColor: "white", // Color del borde
-    borderRadius: 5, // Bordes redondeados
-    alignItems: "center", // Centrado del contenido
-    justifyContent: "center", // Centrado vertical
-    backgroundColor: "#f4f4f4", // Color de fondo por defecto
-  },
-  itemText: {
+  sectionTitle: {
     fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    color: '#000',
   },
-  selectButton: {
-    backgroundColor: "#00cbd1",
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    marginTop: 15,
+  // Estilos para las tarjetas de áreas comunes
+  areaCard: {
+    flexDirection: 'row',
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  selectButtonText: {
-    color: "white",
+  areaCardSelected: {
+    backgroundColor: '#007AFF',
+  },
+  areaIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F0F8FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  areaInfo: {
+    flex: 1,
+  },
+  areaName: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
-  timeModalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
+  areaNameSelected: {
+    color: '#FFF',
+  },
+  areaDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+  },
+  areaDescriptionSelected: {
+    color: '#FFF',
+  },
+  areaCapacity: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  capacityText: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: '#666',
+  },
+  capacityTextSelected: {
+    color: '#FFF',
+  },
+  // Estilos para la sección de fecha y hora
+  dateTimeContainer: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 20,
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F8FF',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  timePickersContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 20,
   },
-  itemContainer: {
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
+  timePickerButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F8FF',
+    padding: 12,
+    borderRadius: 12,
   },
-  selectedItem: {
-    backgroundColor: "#d7feff",
-    
+  timeSeperator: {
+    marginHorizontal: 12,
+    color: '#666',
+    fontSize: 14,
   },
-  modalHeader: {
+  dateTimeText: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
+  reserveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#007AFF',
+    padding: 16,
+    borderRadius: 12,
+  },
+  reserveButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  // Estilos para las tarjetas de reserva
+  reservationCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  reservationHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    width: '100%',
-    marginBottom: 20,
+    marginBottom: 12,
   },
-  exitButton: {
-    padding: 8,
-  },
-  exitButtonText: {
-    fontSize: 20,
-    color: '#666',
+  reservationAreaName: {
+    fontSize: 16,
     fontWeight: 'bold',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 20,
+    color: '#000',
   },
   cancelButton: {
-    backgroundColor: '#f5f5f5',
-    padding: 12,
-    borderRadius: 8,
-    width: '45%',
-    alignItems: 'center',
+    padding: 4,
   },
-  cancelButtonText: {
+  reservationTime: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  timeText: {
+    marginLeft: 8,
+    fontSize: 14,
     color: '#666',
-    fontWeight: '600',
   },
-  confirmButton: {
-    backgroundColor: '#00cbd1',
-    padding: 12,
-    borderRadius: 8,
-    width: '45%',
+  reservationDate: {
+    fontSize: 14,
+    color: '#666',
+  },
+  // Estilos para el estado vacío
+  emptyStateContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+    backgroundColor: '#FFF',
+    borderRadius: 16,
   },
-  confirmButtonText: {
-    color: 'white',
-    fontWeight: '600',
-  }
-
+  emptyStateText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+  // Estilos para los pickers de iOS
+  pickerIOS: {
+    backgroundColor: '#FFF',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  pickerHeaderIOS: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#F6F6F6',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  pickerHeaderTextIOS: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  pickerDoneButtonIOS: {
+    color: '#007AFF',
+    fontSize: 16,
+  },
+  // Estilos adicionales para estados de interacción
+  buttonPressed: {
+    opacity: 0.8,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  errorText: {
+    color: '#FF3B30',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  successText: {
+    color: '#34C759',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  warningBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#FF3B30',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
 });
-
-export default Reservas;

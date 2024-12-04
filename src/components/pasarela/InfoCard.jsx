@@ -7,9 +7,6 @@ export const InfoCard = ({ code, nextPayment, onChatPress }) => {
       <View style={styles.infoBox}>
         <Text style={styles.infoText}>{code}</Text>
       </View>
-      <View style={styles.infoBox}>
-        <Text style={styles.infoText}>Próximo Pago: {nextPayment}</Text>
-      </View>
       <TouchableOpacity style={styles.infoBox} onPress={onChatPress}>
         <Text style={styles.infoText}>Chat</Text>
       </TouchableOpacity>

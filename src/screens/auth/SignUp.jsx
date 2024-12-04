@@ -24,7 +24,7 @@ const SignUp = ({ navigation }) => {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.8.179:3000/auth/login', {
+      const response = await fetch('http://192.168.179.156:7091/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -37,8 +37,13 @@ const SignUp = ({ navigation }) => {
 
       console.log(data);
       console.log(response);
-      if (response.status === 200) {
-        await storeUserData(data.data);
+      if (response.ok) {
+        await storeUserData(
+          {
+            ...data.data,
+            tenantId: formData.tenantId
+          }
+        );
         navigation.navigate("MainApp", { screen: "Pasarela" });
       } else {
         const errorMessage = Array.isArray(data.message) 

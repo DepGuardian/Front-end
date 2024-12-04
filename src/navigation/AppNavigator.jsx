@@ -5,6 +5,7 @@ import { useFonts } from "expo-font";
 import { View, ActivityIndicator } from "react-native";
 import { AuthNavigator } from "./AuthNavigator";
 import { MainNavigator } from "./MainNavigator";
+import TabNavigator from "./TabNavigator";
 
 const RootStack = createNativeStackNavigator();
 
@@ -37,7 +38,7 @@ export const AppNavigator = () => {
         />
         <RootStack.Screen
           name="MainApp"
-          component={MainNavigator}
+          component={TabNavigator}
           options={{ animationEnabled: true }}
         />
       </RootStack.Navigator>

@@ -1,140 +1,213 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
-  Pressable,
+  TouchableOpacity,
   FlatList,
   Alert,
   Modal,
-  TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import ICONS from "react-native-vector-icons/Ionicons";
+import Icon from "react-native-vector-icons/Ionicons";
 import PerfilBar from "../../components/common/PerfilBar";
+import { getUserData } from "../../utils/storage";
+import Header from "../../components/Header";
+
+const API_URL = 'http://192.168.179.156:7091';
 
 const ToDoFamiliar = () => {
-  const navigation = useNavigation();
   const [tareas, setTareas] = useState([]);
-  const [miembros, setMiembros] = useState([]);
   const [nuevaTarea, setNuevaTarea] = useState("");
   const [modalVisibleTarea, setModalVisibleTarea] = useState(false);
-  const [modalVisibleMiembro, setModalVisibleMiembro] = useState(false);
-  const [codigo, setCodigo] = useState("");
-  const [nuevoMiembro, setNuevoMiembro] = useState("");
+  const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isTaskLoading, setIsTaskLoading] = useState(false);
 
-  const agregarTarea = () => {
-    if (nuevaTarea.trim() !== "") {
-      const nueva = {
-        id: Date.now().toString(),
-        nombre: nuevaTarea,
-        hecha: false,
-      };
-      setTareas([...tareas, nueva]);
-      setNuevaTarea("");
-      setModalVisibleTarea(false);
-    } else {
-      Alert.alert("Error", "Escribe una tarea válida");
+  // Cargar datos del usuario al montar el componente
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const data = await getUserData();
+        setUserData(data);
+        console.log('USER DATA', data);
+        // Cargar tareas una vez que tenemos los datos del usuario
+        if (data) {
+          fetchTareas(data);
+        } else {
+          navigator.navigate('MainApp', { screen: 'Pasarela' });
+        }
+      } catch (error) {
+        console.error('Error cargando datos del usuario:', error);
+        Alert.alert('Error', 'No se pudieron cargar los datos del usuario');
+      }
+    };
+
+    loadUserData();
+  }, []);
+
+  // Función para obtener todas las tareas
+  const fetchTareas = async (user) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/todo?tenantId=${user.tenantId}&residentId=${user._id}`,
+        {
+          headers: {
+            'accept': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Error al obtener las tareas');
+      }
+
+      const data = await response.json();
+      setTareas(data.data);
+    } catch (error) {
+      console.error('Error obteniendo tareas:', error);
+      Alert.alert('Error', 'No se pudieron cargar las tareas');
     }
   };
 
-  const toggleCheckbox = (id) => {
-    setTareas(
-      tareas.map((tarea) =>
-        tarea.id === id ? { ...tarea, hecha: !tarea.hecha } : tarea
-      )
-    );
+  // Función para agregar una nueva tarea
+  const agregarTarea = async () => {
+    if (nuevaTarea.trim() === "" || !userData) {
+      Alert.alert("Error", "Escribe una tarea válida");
+      return;
+    }
+
+    try {
+      setIsTaskLoading(true);
+      const response = await fetch(`${API_URL}/todo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json'
+        },
+        body: JSON.stringify({
+          tenantId: userData.tenantId,
+          data: {
+            title: nuevaTarea,
+            done: false,
+            id: Date.now().toString() // Generamos un ID temporal
+          },
+          residentId: userData._id
+        })
+      });
+
+      if (!response.ok) {
+        setIsTaskLoading(false);
+        throw new Error('Error al crear la tarea');
+      }
+
+      // Recargar las tareas después de agregar una nueva
+      await fetchTareas(userData);
+      setNuevaTarea("");
+      setModalVisibleTarea(false);
+      setIsTaskLoading(false);
+    } catch (error) {
+      setIsTaskLoading(false);
+      console.error('Error creando tarea:', error);
+      Alert.alert('Error', 'No se pudo crear la tarea');
+    }
   };
 
-  const agregarMiembro = () => {
-    if (codigo.trim() !== "" && nuevoMiembro.trim() !== "") {
-      const nuevo = { id: Date.now().toString(), nombre: nuevoMiembro };
-      setMiembros([...miembros, nuevo]);
-      setNuevoMiembro("");
-      setCodigo("");
-      setModalVisibleMiembro(false);
-      Alert.alert(
-        "Miembro agregado",
-        "Se ha añadido a la persona correctamente"
-      );
-    } else {
-      Alert.alert(
-        "Error",
-        "Por favor, ingresa un código y el nombre del miembro"
-      );
+  // Función para eliminar una tarea
+  const eliminarTarea = async (todoId) => {
+    try {
+      const response = await fetch(`${API_URL}/todo`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json'
+        },
+        body: JSON.stringify({
+          tenantId: userData.tenantId,
+          todoId: todoId,
+          residentId: userData._id
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar la tarea');
+      }
+
+      // Recargar las tareas después de eliminar
+      await fetchTareas(userData);
+    } catch (error) {
+      console.error('Error eliminando tarea:', error);
+      Alert.alert('Error', 'No se pudo eliminar la tarea');
     }
   };
 
   const renderTarea = ({ item }) => (
     <View style={styles.taskItem}>
       <TouchableOpacity
-        onPress={() => toggleCheckbox(item.id)}
+        onPress={() => eliminarTarea(item.id)}
         style={styles.checkbox}
       >
-        {item.hecha && <View style={styles.checkboxInner} />}
+        {item.done ? (
+          <Icon name="checkmark-circle" size={24} color="#007AFF" />
+        ) : (
+          <Icon name="ellipse-outline" size={24} color="#666" />
+        )}
       </TouchableOpacity>
       <Text
         style={[
           styles.taskText,
-          { textDecorationLine: item.hecha ? "line-through" : "none" },
+          item.done && styles.taskTextCompleted
         ]}
       >
-        {item.nombre}
+        {item.title}
+      </Text>
+      <Text style={styles.taskDate}>
+        {new Date().toLocaleDateString()}
       </Text>
     </View>
   );
 
-  const renderMiembro = ({ item }) => (
-    <View style={styles.memberItem}>
-      <Text style={styles.taskText}>{item.nombre}</Text>
-    </View>
-  );
+  if (isLoading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      {/* <TouchableOpacity
-        onPress={() => navigation.navigate("Pasarela")}
-        style={styles.backButton}
-      >
-        <ICONS name="arrow-back" size={24} color="black" />
-      </TouchableOpacity> */}
-      <PerfilBar />
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+      
+      <Header userData={userData} />
+
       <Text style={styles.title}>Planner Familiar</Text>
 
-      <Pressable
+      <TouchableOpacity
         onPress={() => setModalVisibleTarea(true)}
-        style={styles.taskButton}
+        style={styles.addTaskButton}
       >
-        <Text style={styles.addText}>+</Text>
-        <Text style={styles.buttonText}>Agregar Tarea</Text>
-      </Pressable>
+        <Icon name="add" size={24} color="#000" />
+        <Text style={styles.addTaskText}>Agregar Tarea</Text>
+      </TouchableOpacity>
 
       <FlatList
         data={tareas}
         renderItem={renderTarea}
         keyExtractor={(item) => item.id}
-        style={styles.listContainer}
+        style={styles.taskList}
+        contentContainerStyle={styles.taskListContent}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No hay tareas pendientes</Text>
+          </View>
+        }
       />
 
-      <Text style={[styles.buttonText, styles.sectionTitle]}>Miembros:</Text>
-
-      <Pressable
-        onPress={() => setModalVisibleMiembro(true)}
-        style={styles.taskButton}
-      >
-        <Text style={styles.addText}>+</Text>
-        <Text style={styles.buttonText}>Añadir miembro</Text>
-      </Pressable>
-
-      <FlatList
-        data={miembros}
-        renderItem={renderMiembro}
-        keyExtractor={(item) => item.id}
-        style={styles.listContainer}
-      />
-
-      {/* Modal para agregar tarea */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -143,171 +216,188 @@ const ToDoFamiliar = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Escribe la nueva tarea:</Text>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Nueva Tarea</Text>
+              <TouchableOpacity 
+                onPress={() => setModalVisibleTarea(false)}
+                disabled={isTaskLoading}
+              >
+                <Icon name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+
             <TextInput
-              placeholder="Tarea"
+              placeholder="¿Qué necesitas hacer?"
               value={nuevaTarea}
               onChangeText={setNuevaTarea}
-              style={styles.input}
+              style={styles.modalInput}
+              editable={!isTaskLoading}
+              multiline
             />
-            <Pressable
-              onPress={agregarTarea}
-              style={[styles.modalButton, styles.addButton]}
-            >
-              <Text style={styles.buttonText}>Añadir Tarea</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setModalVisibleTarea(false)}
-              style={styles.modalButton}
-            >
-              <Text style={styles.cancelText}>Cancelar</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
 
-      {/* Modal para agregar miembro */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisibleMiembro}
-        onRequestClose={() => setModalVisibleMiembro(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              Ingresa el código para añadir un miembro:
-            </Text>
-            <TextInput
-              placeholder="Código"
-              value={codigo}
-              onChangeText={setCodigo}
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Nombre del miembro"
-              value={nuevoMiembro}
-              onChangeText={setNuevoMiembro}
-              style={styles.input}
-            />
-            <Pressable
-              onPress={agregarMiembro}
-              style={[styles.modalButton, styles.addButton]}
+            <TouchableOpacity
+              onPress={agregarTarea}
+              style={[styles.modalButton, isTaskLoading && styles.modalButtonDisabled]}
+              disabled={isTaskLoading || !nuevaTarea.trim()}
             >
-              <Text style={styles.buttonText}>Añadir miembro</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setModalVisibleMiembro(false)}
-              style={styles.modalButton}
-            >
-              <Text style={styles.cancelText}>Cancelar</Text>
-            </Pressable>
+              {isTaskLoading ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.modalButtonText}>Agregar Tarea</Text>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
+    backgroundColor: '#FFFFFF',
   },
-  backButton: {
-    marginTop: 10,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconButton: {
+    padding: 8,
+  },
+  avatarContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#007AFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   title: {
-    paddingTop: "4%",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginVertical: 20,
-  },
-  sectionTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
     marginTop: 20,
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
-  taskButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 10,
+  addTaskButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
   },
-  addText: {
-    fontSize: 24,
-    marginRight: 5,
+  addTaskText: {
+    fontSize: 16,
+    color: '#000',
   },
-  buttonText: {
-    fontWeight: "bold",
-    fontSize: 18,
+  taskList: {
+    flex: 1,
+  },
+  taskListContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  taskItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
   checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "black",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 10,
-  },
-  checkboxInner: {
-    width: 12,
-    height: 12,
-    backgroundColor: "green",
-    borderRadius: 6,
+    marginRight: 12,
   },
   taskText: {
+    flex: 1,
     fontSize: 16,
+    color: '#000',
+  },
+  taskTextCompleted: {
+    color: '#999',
+    textDecorationLine: 'line-through',
+  },
+  taskDate: {
+    fontSize: 12,
+    color: '#999',
+    marginLeft: 8,
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
   },
   modalContent: {
-    width: 300,
-    padding: 20,
-    backgroundColor: "white",
-    borderRadius: 10,
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 24,
+    minHeight: 300,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   modalTitle: {
-    fontWeight: "bold",
-    marginBottom: 10,
-    fontSize: 16,
+    fontSize: 20,
+    fontWeight: 'bold',
   },
-  input: {
-    borderBottomWidth: 1,
-    padding: 10,
-    marginBottom: 15,
+  modalInput: {
     fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 20,
+    minHeight: 100,
   },
   modalButton: {
-    padding: 12,
+    backgroundColor: '#007AFF',
     borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 10,
+    padding: 16,
+    alignItems: 'center',
   },
-  addButton: {
-    backgroundColor: "lightblue",
+  modalButtonDisabled: {
+    backgroundColor: '#999',
   },
-  cancelText: {
-    color: "red",
+  modalButtonText: {
+    color: '#FFF',
     fontSize: 16,
+    fontWeight: 'bold',
   },
-  taskItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 8,
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
   },
-  memberItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 8,
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
   },
-  listContainer: {
-    maxHeight: 200,
-    marginTop: 10,
+  loaderContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF',
   },
 });
 

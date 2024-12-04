@@ -21,7 +21,7 @@ export const TabNavigator = () => {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
           // Personaliza el tamaño del icono según la plataforma
-          const iconSize = Platform.OS === "ios" ? size : size + 2;
+          const iconSize = Platform.OS === "ios" ? size-6 : size-4;
 
           switch (route.name) {
             case "HomeTab":
@@ -148,27 +148,9 @@ export const TabNavigator = () => {
           ),
           tabBarIcon: ({ focused, color, size }) => {
             let iconName = focused ? "chatbubble" : "chatbubble-outline";
-            const iconSize = Platform.OS === "ios" ? size : size + 2;
+            const iconSize = Platform.OS === "ios" ? size-6 : size-4;
             return <Ionicons name={iconName} size={iconSize} color={color} />;
           },
-        }}
-      />
-
-      <Tab.Screen
-        name="MenuTab"
-        component={ToDoFamiliar}
-        options={{
-          title: "Menú",
-          tabBarLabel: ({ focused, color }) => (
-            <Text
-              style={[
-                styles.tabBarLabel,
-                { color: focused ? "#000000" : "#757575" },
-              ]}
-            >
-              Menú
-            </Text>
-          ),
         }}
       />
     </Tab.Navigator>
@@ -178,8 +160,8 @@ export const TabNavigator = () => {
 const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: "#FFFFFF",
-    height: Platform.OS === "ios" ? 85 : 65,
-    paddingBottom: Platform.OS === "ios" ? 20 : 10,
+    height: Platform.OS === "ios" ? 85 : 70,
+    paddingBottom: Platform.OS === "ios" ? 10 : 5,
     paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: "#E0E0E0",

@@ -4,9 +4,9 @@ export const PagosSim = {
     fechaVencimiento: "30/09/2024",
   },
   servicios: [
-    { id: 1, nombre: "Luz", icon: "bulb-outline", color: "yellow" },
-    { id: 2, nombre: "Internet", icon: "wifi-outline", color: "blue" },
-    { id: 3, nombre: "Agua", icon: "water-outline", color: "cyan" },
+    { id: 1, nombre: "Luz", icon: "flash", color: "yellow" },
+    { id: 2, nombre: "Internet", icon: "wifi", color: "blue" },
+    { id: 3, nombre: "Agua", icon: "water", color: "cyan" },
   ],
   serviciosTotal: {
     precio: 250.0,

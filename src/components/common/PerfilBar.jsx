@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import ICONS2 from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import { storeUserData } from "../../utils/storage";
 
 const PerfilBar = () => {
   const navigation = useNavigation();
@@ -20,6 +21,7 @@ const PerfilBar = () => {
     console.log("Cerrando sesión");
     setShowMenu(false); // Si estás utilizando este estado
     try {
+      storeUserData(null);
       navigation.reset({
         index: 0,
         routes: [{ name: "Auth", params: { screen: "Landing" } }],
