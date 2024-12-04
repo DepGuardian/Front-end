@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { InfoCard } from "../../components/pasarela/InfoCard";
 import { ServiceButton } from "../../components/pasarela/ServiceButton";
 import PerfilBar from "../../components/common/PerfilBar";
+import { getUserData } from "../../utils/storage";
 
 const QuickActionCard = ({ image, description, buttonText, onPress }) => (
   <View style={styles.actionCard}>
@@ -60,6 +61,15 @@ const Pasarela = ({ navigation }) => {
       <QuickActionCard key={index} {...action} />
     ));
   };
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      const userData = await getUserData();
+      console.log('USER DATA', userData);
+    };
+
+    loadUserData();
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>

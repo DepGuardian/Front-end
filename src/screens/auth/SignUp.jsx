@@ -1,15 +1,66 @@
 import React, { useState } from "react";
-import { ImageBackground, View, Text, StyleSheet } from "react-native";
+import { ImageBackground, View, Text, StyleSheet, Alert } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/common/Button";
 import { Input } from "../../components/common/Input";
 import { theme } from "../../theme";
+import { storeUserData } from "../../utils/storage";
 
 const SignUp = ({ navigation }) => {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    tenantId: "1",
+    isSuperAdmin: false
   });
+
+  const tenantOptions = [
+    { label: "Miraflores Urban", value: "1" },
+    { label: "La Florida", value: "2" },
+  ];
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://192.168.8.179:3000/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      console.log(data);
+      console.log(response);
+      if (response.status === 200) {
+        await storeUserData(data.data);
+        navigation.navigate("MainApp", { screen: "Pasarela" });
+      } else {
+        const errorMessage = Array.isArray(data.message) 
+          ? "Por favor verifique los datos ingresados"
+          : data.message || "Error en el inicio de sesión";
+        
+        Alert.alert(
+          "Error",
+          errorMessage,
+          [{ text: "OK" }]
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        "Error de conexión. Intente más tarde",
+        [{ text: "OK" }]
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ImageBackground
@@ -26,20 +77,42 @@ const SignUp = ({ navigation }) => {
 
           <View style={styles.form}>
             <Input
-              label="Usuario o Correo Electrónico"
+              label="Correo Electrónico"
               placeholder="Ingrese su email"
               value={formData.email}
               onChangeText={(text) => setFormData({ ...formData, email: text })}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              disabled={loading}
             />
             <Input
               label="Contraseña"
               placeholder="Ingrese su contraseña"
               value={formData.password}
-              onChangeText={(text) =>
-                setFormData({ ...formData, password: text })
-              }
+              onChangeText={(text) => setFormData({ ...formData, password: text })}
               secureTextEntry
+              disabled={loading}
             />
+            
+            <View style={styles.pickerContainer}>
+              <Text style={styles.pickerLabel}>Condominio</Text>
+              <Picker
+                selectedValue={formData.tenantId}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, tenantId: value })
+                }
+                style={styles.picker}
+                enabled={!loading}
+              >
+                {tenantOptions.map((option) => (
+                  <Picker.Item
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
+                  />
+                ))}
+              </Picker>
+            </View>
           </View>
 
           <View style={styles.buttonContainer}>
@@ -52,14 +125,14 @@ const SignUp = ({ navigation }) => {
                 position: "left",
                 family: "Ionicons",
               }}
+              disabled={loading}
             />
             <Button
-              label="Ingresar"
+              label={loading ? "Cargando..." : "Ingresar"}
               variant="primary"
-              onPress={() =>
-                navigation.navigate("MainApp", { screen: "Pasarela" })
-              }
+              onPress={handleLogin}
               icon={{ name: "sign-in", position: "right" }}
+              disabled={loading}
             />
           </View>
         </View>
@@ -75,7 +148,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "flex-end",
-    // paddingHorizontal: theme.spacing.md,
   },
   card: {
     backgroundColor: theme.colors.background,
@@ -95,6 +167,20 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: theme.spacing.md,
+  },
+  pickerContainer: {
+    marginBottom: 15,
+  },
+  pickerLabel: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 14,
+    color: "#000",
+    marginBottom: 5,
+  },
+  picker: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    padding: 5,
   },
   buttonContainer: {
     flexDirection: "row",

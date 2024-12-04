@@ -8,11 +8,19 @@ import {
   Modal,
   FlatList,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import ICONS from "react-native-vector-icons/FontAwesome";
 import ICONS2 from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import PerfilBar from "../../components/common/PerfilBar";
+
+//tenant id:2 
+//logica para la integración con el backend
+
+
+
+//
 
 // Obtén la fecha actual
 const today = new Date();
@@ -54,6 +62,69 @@ const Reservas = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedDay, setSelectedDay] = useState(null);
+  const [commonAreas, setCommonAreas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedReservation, setSelectedReservation] = useState(null); // Reserva seleccionada
+  const [reservations, setReservations] = useState([]);// Almacena las áreas comunes
+ 
+
+  useEffect(() => {
+    // Fetch para obtener las áreas comunes
+    const fetchCommonAreas = async () => {
+      console.log("fetchCommonAreas");
+      try {
+        const response = await fetch("http://192.168.8.179:3000/commonarea/all?tenantId=2");
+        console.log("response", response);
+        const result = await response.json();
+
+        console.log("result", result);
+        if (result.status === 200) {
+          console.log("result.data", result.data);
+          setCommonAreas(result.data); // Guardamos los datos en el estado
+        } else {
+          console.error("Error al obtener las áreas comunes:", result.errorMessage);
+        }
+      } catch (error) {
+        console.error("Error de red:", error);
+      } finally {
+        setLoading(false); // Terminamos la carga
+      }
+    };
+
+    fetchCommonAreas();
+  }, []);
+
+  const createReservation = async (reservationData) => {
+    try {
+      const response = await fetch('http://192.168.8.179:3000/reservation?tenantId=2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reservationData),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Error al crear la reserva');
+      }
+  
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  };
+
+  const handleOpenModalReservation = (reservation) => {
+    setSelectedReservation(reservation); // Establece la reserva seleccionada
+    setModalVisible(true); // Muestra el modal
+  };
+
+  const handleCloseModalReservation = () => {
+    setModalVisible(false);
+    setSelectedReservation(null); // Limpia la reserva seleccionada
+  };
 
   const handleDaySelection = (day) => {
     // Verifica que el día seleccionado no sea anterior a la fecha actual
@@ -172,12 +243,66 @@ const Reservas = () => {
     setSelectedYear(selectedYear + 1);
   };
 
-  const handleCloseEndHourModal = () => {
-    setEndHourModalVisible(false);
-    setConfirmationModalVisible(true);
+  const convertTo24Hour = (time) => {
+    const [rawTime, period] = time.split(' ');
+    let [hours, minutes] = rawTime.split(':');
+    hours = parseInt(hours);
+  
+    if (period === 'PM' && hours !== 12) {
+      hours += 12;
+    } else if (period === 'AM' && hours === 12) {
+      hours = 0;
+    }
+  
+    return `${String(hours).padStart(2, '0')}:00`;
+  };
 
-    // Oculta el modal de confirmación después de 3 segundos
-    setTimeout(() => setConfirmationModalVisible(false), 3000);
+
+
+  const handleCloseEndHourModal = async () => {
+    try {
+      // Format the selected date and times
+      const formattedDate = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+      
+      // Convertir las horas a formato 24h
+      const startTime = convertTo24Hour(selectedStartHour);
+      const endTime = convertTo24Hour(selectedEndHour);
+      
+      const startDateTime = `${formattedDate}T${startTime}:00.000Z`;
+      const endDateTime = `${formattedDate}T${endTime}:00.000Z`;
+  
+      // Prepare the reservation data
+      const reservationData = {
+        id_common_area: selectedReservation._id,
+        id_host: "673026ddcf7eef24b6656b40",
+        start_time: startDateTime,
+        end_time: endDateTime,
+        tenantId: "2"
+      };
+  
+      console.log('Reservation Data:', reservationData); // Para debugging
+  
+      // Send the POST request
+      await createReservation(reservationData);
+  
+      // Close the end hour modal and show confirmation
+      setEndHourModalVisible(false);
+      setConfirmationModalVisible(true);
+  
+      // Hide confirmation modal after a delay
+      setTimeout(() => {
+        setConfirmationModalVisible(false);
+        handleCloseModalReservation();
+      }, 2000);
+  
+    } catch (error) {
+      console.error('Error details:', error); // Para debugging
+      Alert.alert(
+        "Error",
+        "No se pudo crear la reserva. Por favor intente nuevamente.",
+        [{ text: "OK" }]
+      );
+    }
   };
   const hours = [
     "08:00 AM",
@@ -226,6 +351,25 @@ const Reservas = () => {
         animated: false,
       });
     }
+
+    const ConfirmationModal = () => (
+      <Modal
+        visible={confirmationModalVisible}
+        animationType="fade"
+        transparent
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.timeModalTitle}>
+              ¡Reserva registrada exitosamente!
+            </Text>
+            {/* You might want to add additional details here */}
+          </View>
+        </View>
+      </Modal>
+    );
+
+
     // Si el usuario llega al inicio, reseteamos al centro
     if (offsetY <= 50) {
       startHourRef.current.scrollToIndex({
@@ -299,279 +443,310 @@ const Reservas = () => {
       </View>
 
       <View style={[styles.Card_reservas, { height: 645 }]}>
-        <ScrollView
-          contentContainerStyle={{ paddingVertical: 10 }}
-          showsVerticalScrollIndicator={false}
+      {loading ? (
+  <ActivityIndicator size="large" color="#00cbd1" /> // Indicador de carga mientras se obtienen los datos
+) : (
+  <ScrollView contentContainerStyle={{ paddingVertical: 10 }} showsVerticalScrollIndicator={false}>
+    {commonAreas.length > 0 ? (
+      commonAreas.map((area) => (
+        <View key={area._id} style={styles.Card_reservas_ejemplo}>
+          <Image
+            source={require("../../../assets/sala_juegos.jpg")} // Cambia a tu lógica para la imagen
+            style={{
+              width: 150,
+              height: 130,
+              borderRadius: 40,
+              borderTopRightRadius: 0,
+              borderBottomRightRadius: 0,
+            }}
+          />
+          <Text
+            style={[
+              styles.textbuttonWhite,
+              {
+                position: "absolute",
+                top: 4,
+                left: 170,
+                fontSize: 23,
+              },
+            ]}
+          >
+            {area.name} {/* Muestra el nombre del área común */}
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.buttonBlack_ch,
+              {
+                position: "absolute",
+                bottom: 7,
+                left: 150,
+              },
+            ]}
+            onPress={() => handleOpenModalReservation(area)}
+          >
+            <Text style={styles.textbuttonBlack_ch}>Ver disponibilidad</Text>
+            <ICONS name="arrow-right" size={12} color="white" />
+          </TouchableOpacity>
+        </View>
+      ))
+    ) : (
+      <Text style={{ textAlign: "center", marginTop: 20 }}>No hay áreas comunes disponibles.</Text>
+    )}
+  </ScrollView>
+)}
+
+{/* Modal de disponibilidad */}
+{selectedReservation && (
+  <Modal
+    transparent={true}
+    visible={modalVisible}
+    animationType="fade"
+    onRequestClose={handleCloseModalReservation}
+  >
+    <View style={styles.modalOverlay}>
+      <View style={styles.modalContent}>
+        <Image
+          source={require("../../../assets/sala_juegos.jpg")}
+          style={styles.modalImage}
+        />
+        <View style={styles.infoRow}>
+          <Text style={styles.boldText}>Estado actual:</Text>
+          <Text>{selectedReservation.status}</Text>
+          <Text style={styles.boldText}> Capacidad:</Text>
+          <Text>{selectedReservation.capacity}</Text>
+        </View>
+        <Text style={styles.modalText}>
+          {selectedReservation.description}
+        </Text>
+        <TouchableOpacity
+          onPress={handleOpenDateModal}
+          style={styles.closeButton}
         >
-          {Array.from({ length: 10 }).map((_, index) => (
-            <View key={index} style={styles.Card_reservas_ejemplo}>
-              <Image
-                source={require("../../../assets/sala_juegos.jpg")}
-                style={{
-                  width: 150,
-                  height: 130,
-                  borderRadius: 40,
-                  borderTopRightRadius: 0,
-                  borderBottomRightRadius: 0,
-                }}
-              />
+          <Text style={styles.closeButtonText}>Reservar</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </Modal>
+)}
+
+
+<Modal
+  transparent={true}
+  visible={dateModalVisible}
+  animationType="fade"
+  onRequestClose={handleCloseDateModal}
+>
+  <View style={styles.modalOverlay}>
+    <View style={[styles.modalContent, { maxHeight: "80%" }]}>
+      <Text style={styles.boldText}>Seleccionar Fecha</Text>
+      <View style={styles.dateSelectionRow}>
+        <TouchableOpacity onPress={handlePrevYear}>
+          <Text style={styles.arrowButton}>{"<"}</Text>
+        </TouchableOpacity>
+        <Text style={styles.label}>
+          {months[selectedMonth]} {selectedYear}
+        </Text>
+        <TouchableOpacity onPress={handleNextYear}>
+          <Text style={styles.arrowButton}>{">"}</Text>
+        </TouchableOpacity>
+        <Text>{"                        "}</Text>
+        <TouchableOpacity onPress={handlePrevMonth}>
+          <Text style={styles.arrowButton}>{"<"}</Text>
+        </TouchableOpacity>
+        <Text>{"  "}</Text>
+        <TouchableOpacity onPress={handleNextMonth}>
+          <Text style={styles.arrowButton}>{">"}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Días de la semana en una fila */}
+      <View
+        style={[
+          styles.weekDaysRow,
+          { flexDirection: "row", justifyContent: "space-between" },
+        ]}
+      >
+        {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map(
+          (day, index) => (
+            <Text
+              key={index}
+              style={[
+                styles.weekDayText,
+                { flex: 1, textAlign: "center" },
+              ]}
+            >
+              {day}
+            </Text>
+          )
+        )}
+      </View>
+
+      <FlatList
+        data={createCalendar(selectedYear, selectedMonth)}
+        numColumns={7}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[
+              styles.item,
+              item === selectedDay && { backgroundColor: "#d7feff" },
+            ]}
+            onPress={() => item !== 0 && handleDaySelection(item)}
+          >
+            {item !== 0 && (
               <Text
                 style={[
-                  styles.textbuttonWhite,
-                  {
-                    position: "absolute",
-                    top: 4,
-                    left: 170,
-                    fontSize: 23,
+                  styles.itemText,
+                  item === selectedDay && {
+                    color: "#00cbd1",
+                    fontSize: 19,
+                    fontWeight: "bold",
                   },
                 ]}
               >
-                Salón de juegos
+                {item}
               </Text>
-              <TouchableOpacity
-                style={[
-                  styles.buttonBlack_ch,
-                  {
-                    position: "absolute",
-                    bottom: 7,
-                    left: 150,
-                  },
-                ]}
-                onPress={handleOpenModal}
-              >
-                <Text style={styles.textbuttonBlack_ch}>
-                  Ver disponibilidad
-                </Text>
-                <ICONS name="arrow-right" size={12} color="white" />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
+            )}
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      />
 
-        {/* Modal de disponibilidad */}
-        <Modal
-          transparent={true}
-          visible={modalVisible}
-          animationType="fade"
-          onRequestClose={handleCloseModal}
+      <TouchableOpacity
+        onPress={() => {
+          if (!selectedDay) {
+            Alert.alert('Error', 'Por favor seleccione una fecha');
+            return;
+          }
+          setDateModalVisible(false);
+          setStartHourModalVisible(true);
+        }}
+        style={styles.selectButton}
+      >
+        <Text style={styles.selectButtonText}>Horario</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+{/* Modal de hora de inicio */}
+<Modal visible={startHourModalVisible} animationType="fade" transparent>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContent}>
+      <Text style={styles.timeModalTitle}>
+        Seleccione la hora de inicio
+      </Text>
+
+      <View style={{ height: 150 }}>
+        <FlatList
+          ref={startHourRef}
+          data={infiniteHours}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) =>
+            renderTimeOption(item, handleStartHourSelection)
+          }
+          getItemLayout={getItemLayout}
+          initialScrollIndex={middleIndex}
+          showsVerticalScrollIndicator={false}
+          snapToInterval={50}
+          snapToAlignment="center"
+          decelerationRate="fast"
+          pagingEnabled
+          contentContainerStyle={{ paddingVertical: 50 }}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+        />
+      </View>
+
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={() => {
+          if (!selectedStartHour) {
+            Alert.alert('Error', 'Por favor seleccione una hora de inicio');
+            return;
+          }
+          setStartHourModalVisible(false);
+          setEndHourModalVisible(true);
+        }}
+      >
+        <Text style={styles.closeButtonText}>Siguiente</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+{/* Modal para el selector de hora de fin */}
+<Modal visible={endHourModalVisible} animationType="fade" transparent>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContent}>
+      <Text style={styles.timeModalTitle}>
+        Seleccione la hora de fin
+      </Text>
+
+      <View style={{ height: 150 }}>
+        <FlatList
+          ref={endHourRef}
+          data={infiniteHours}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) =>
+            renderTimeOption(item, setSelectedEndHour)
+          }
+          getItemLayout={getItemLayout}
+          initialScrollIndex={middleIndex}
+          showsVerticalScrollIndicator={false}
+          snapToInterval={50}
+          snapToAlignment="center"
+          decelerationRate="fast"
+          pagingEnabled
+          contentContainerStyle={{ paddingVertical: 50 }}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+        />
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={() => {
+            setEndHourModalVisible(false);
+            setSelectedEndHour(null);
+          }}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Image
-                source={require("../../../assets/sala_juegos.jpg")}
-                style={styles.modalImage}
-              />
-              <View style={styles.infoRow}>
-                <Text style={styles.boldText}>Estado actual:</Text>
-                <Text>Reservado</Text>
-                <Text style={styles.boldText}> Capacidad:</Text>
-                <Text>100</Text>
-              </View>
-              <Text style={styles.modalText}>
-                Área recreativa en el que varias personas pueden entrar...
-              </Text>
-              <TouchableOpacity
-                onPress={handleOpenDateModal}
-                style={styles.closeButton}
-              >
-                <Text style={styles.closeButtonText}>Reservar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
+          <Text style={styles.cancelButtonText}>Cancelar</Text>
+        </TouchableOpacity>
 
-        {/* Modal de fecha */}
-        <Modal
-          transparent={true}
-          visible={dateModalVisible}
-          animationType="fade"
-          onRequestClose={handleCloseDateModal}
+        <TouchableOpacity
+          style={styles.confirmButton}
+          onPress={handleCloseEndHourModal}
         >
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalContent, { maxHeight: "80%" }]}>
-              <Text style={styles.boldText}>Seleccionar Fecha</Text>
-              <View style={styles.dateSelectionRow}>
-                <TouchableOpacity onPress={handlePrevYear}>
-                  <Text style={styles.arrowButton}>{"<"}</Text>
-                </TouchableOpacity>
-                <Text style={styles.label}>
-                  {months[selectedMonth]} {selectedYear}
-                </Text>
-                <TouchableOpacity onPress={handleNextYear}>
-                  <Text style={styles.arrowButton}>{">"}</Text>
-                </TouchableOpacity>
-                <Text>{"                        "}</Text>
-                <TouchableOpacity onPress={handlePrevMonth}>
-                  <Text style={styles.arrowButton}>{"<"}</Text>
-                </TouchableOpacity>
-                <Text>{"  "}</Text>
-                <TouchableOpacity onPress={handleNextMonth}>
-                  <Text style={styles.arrowButton}>{">"}</Text>
-                </TouchableOpacity>
-              </View>
+          <Text style={styles.confirmButtonText}>Confirmar Reserva</Text>
+        </TouchableOpacity>
+      </View>
 
-              {/* Días de la semana en una fila */}
-              <View
-                style={[
-                  styles.weekDaysRow,
-                  { flexDirection: "row", justifyContent: "space-between" },
-                ]}
-              >
-                {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map(
-                  (day, index) => (
-                    <Text
-                      key={index}
-                      style={[
-                        styles.weekDayText,
-                        { flex: 1, textAlign: "center" },
-                      ]}
-                    >
-                      {day}
-                    </Text>
-                  )
-                )}
-              </View>
 
-              <FlatList
-                data={createCalendar(selectedYear, selectedMonth)} // Los días generados
-                
-                numColumns={7} // 7 columnas para los días de la semana
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={[
-                      styles.item,
-                      item === selectedDay && { backgroundColor: "#d7feff" },
-                    ]} // Cambia el fondo si es seleccionado
-                    onPress={() => item !== 0 && handleDaySelection(item)} // Solo selecciona los días válidos (no 0)
-                  >
-                    {item !== 0 && (
-                      <Text
-                        style={[
-                          styles.itemText,
-                          item === selectedDay && {
-                            color: "#00cbd1",
-                            fontSize: 24,
-                            fontWeight: "bold",
-                          },
-                        ]}
-                      >
-                        {item}
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                )}
-                keyExtractor={(item, index) => index.toString()} // Usamos el índice como clave única
-              />
+    </View>
+  </View>
+</Modal>
 
-              {/* Botón para confirmar la selección */}
-              <TouchableOpacity
-                onPress={() => {
-                  setDateModalVisible(false);
-                  setStartHourModalVisible(true);
-                }}
-                style={styles.selectButton}
-              >
-                <Text style={styles.selectButtonText}>Horario</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-
-        {/* Modal de hora de inicio */}
-        <Modal visible={startHourModalVisible} animationType="fade" transparent>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.timeModalTitle}>
-                Seleccione la hora de inicio
-              </Text>
-
-              <View style={{ height: 150 }}>
-                <FlatList
-                  ref={startHourRef}
-                  data={infiniteHours}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item }) =>
-                    renderTimeOption(item, handleStartHourSelection)
-                  }
-                  getItemLayout={getItemLayout}
-                  initialScrollIndex={middleIndex} // Empezamos en el centro
-                  showsVerticalScrollIndicator={false}
-                  snapToInterval={50}
-                  snapToAlignment="center"
-                  decelerationRate="fast"
-                  pagingEnabled
-                  contentContainerStyle={{ paddingVertical: 50 }}
-                  onScroll={handleScroll} // Detecta cuando reiniciar el scroll
-                  scrollEventThrottle={16} // Ajusta la frecuencia de evento de scroll para rendimiento
-                />
-              </View>
-
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => {
-                  setStartHourModalVisible(false);
-                  setEndHourModalVisible(true);
-                }}
-              >
-                <Text style={styles.closeButtonText}>Cerrar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-
-        {/* Modal para el selector de hora de fin */}
-        <Modal visible={endHourModalVisible} animationType="fade" transparent>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.timeModalTitle}>
-                Seleccione la hora de fin
-              </Text>
-
-              <View style={{ height: 150 }}>
-                <FlatList
-                  ref={endHourRef}
-                  data={infiniteHours}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item }) =>
-                    renderTimeOption(item, setSelectedEndHour)
-                  }
-                  getItemLayout={getItemLayout}
-                  initialScrollIndex={middleIndex} // Empezamos en el centro
-                  showsVerticalScrollIndicator={false}
-                  snapToInterval={50}
-                  snapToAlignment="center"
-                  decelerationRate="fast"
-                  pagingEnabled
-                  contentContainerStyle={{ paddingVertical: 50 }}
-                  onScroll={handleScroll} // Detecta cuando reiniciar el scroll
-                  scrollEventThrottle={16} // Ajusta la frecuencia de evento de scroll para rendimiento
-                />
-              </View>
-
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={handleCloseEndHourModal}
-              >
-                <Text style={styles.closeButtonText}>Cerrar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-
-        {/* Modal de confirmación de reserva */}
-        <Modal
-          visible={confirmationModalVisible}
-          animationType="fade"
-          transparent
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.timeModalTitle}>
-                ¡Reserva registrada!
-              </Text>
-            </View>
-          </View>
-        </Modal>
+{/* Modal de confirmación de reserva */}
+<Modal
+  visible={confirmationModalVisible}
+  animationType="fade"
+  transparent
+>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContent}>
+      <Text style={styles.timeModalTitle}>
+        ¡Reserva registrada!
+      </Text>
+      <Text style={styles.modalText}>
+        Fecha: {selectedDay}/{selectedMonth + 1}/{selectedYear}
+      </Text>
+      <Text style={styles.modalText}>
+        Horario: {selectedStartHour} - {selectedEndHour}
+      </Text>
+    </View>
+  </View>
+</Modal>
       </View>
     </View>
   );
@@ -751,6 +926,50 @@ const styles = StyleSheet.create({
     backgroundColor: "#d7feff",
     
   },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 20,
+  },
+  exitButton: {
+    padding: 8,
+  },
+  exitButtonText: {
+    fontSize: 20,
+    color: '#666',
+    fontWeight: 'bold',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 20,
+  },
+  cancelButton: {
+    backgroundColor: '#f5f5f5',
+    padding: 12,
+    borderRadius: 8,
+    width: '45%',
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontWeight: '600',
+  },
+  confirmButton: {
+    backgroundColor: '#00cbd1',
+    padding: 12,
+    borderRadius: 8,
+    width: '45%',
+    alignItems: 'center',
+  },
+  confirmButtonText: {
+    color: 'white',
+    fontWeight: '600',
+  }
+
 });
 
 export default Reservas;

@@ -6,18 +6,82 @@ import {
   StyleSheet,
   Modal,
   TouchableWithoutFeedback,
+  Alert,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { Input } from "../../components/common/Input";
 import { Button } from "../../components/common/Button";
 import Card from "../../components/Card";
+import { storeUserData } from "../../utils/storage";
 
 const SignIn = ({ navigation }) => {
   const [formData, setFormData] = useState({
-    nombre: "",
-    apellido: "",
-    departamento: "",
+    fullName: "",
+    email: "",
+    password: "",
+    apartment: "",
+    tenantId: "1",
+    code: "",
   });
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const tenantOptions = [
+    { label: "Miraflores Urban", value: "1" },
+    { label: "La Florida", value: "2" },
+  ];
+
+  const handleSubmit = () => {
+    setShowModal(true);
+  };
+
+  const handleRegistration = async (code) => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        "http://192.168.8.179:3000/auth/registerResident",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            ...formData,
+            code: parseInt(code) ?? 0,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      console.log(data);
+
+      if (response.status === 201) {
+        setShowModal(false);
+        await storeUserData(data.data);
+        navigation.navigate("MainApp", {
+          screen: "Pasarela",
+        });
+      } else {
+        const errorMessage = Array.isArray(data.message) 
+          ? "Por favor verifique los datos ingresados"
+          : data.message || "Error en el inicio de sesión";
+        
+        Alert.alert(
+          "Error",
+          errorMessage,
+          [{ text: "OK" }]
+        );
+      }
+    } catch (error) {
+      Alert.alert("Error", "Error de conexión. Por favor intente más tarde", [
+        { text: "OK" },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ImageBackground
@@ -35,28 +99,55 @@ const SignIn = ({ navigation }) => {
           <View style={styles.form}>
             <Input
               label="Nombre Completo"
-              placeholder="Ingrese su Nombre"
-              value={formData.nombre}
+              placeholder="Ingrese su nombre completo"
+              value={formData.fullName}
               onChangeText={(text) =>
-                setFormData({ ...formData, nombre: text })
+                setFormData({ ...formData, fullName: text })
               }
             />
             <Input
-              label="Apellido"
-              placeholder="Ingrese su apellido"
-              value={formData.apellido}
-              onChangeText={(text) =>
-                setFormData({ ...formData, apellido: text })
-              }
+              label="Email"
+              placeholder="Ingrese su email"
+              value={formData.email}
+              onChangeText={(text) => setFormData({ ...formData, email: text })}
+              keyboardType="email-address"
+              autoCapitalize="none"
             />
             <Input
-              label="Departamento"
-              placeholder="Ingrese su departamento"
-              value={formData.departamento}
+              label="Contraseña"
+              placeholder="Ingrese su contraseña"
+              value={formData.password}
               onChangeText={(text) =>
-                setFormData({ ...formData, departamento: text })
+                setFormData({ ...formData, password: text })
+              }
+              secureTextEntry
+            />
+            <Input
+              label="Apartamento"
+              placeholder="Ingrese su número de apartamento"
+              value={formData.apartment}
+              onChangeText={(text) =>
+                setFormData({ ...formData, apartment: text })
               }
             />
+            <View style={styles.pickerContainer}>
+              <Text style={styles.pickerLabel}>Condominio</Text>
+              <Picker
+                selectedValue={formData.tenantId}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, tenantId: value })
+                }
+                style={styles.picker}
+              >
+                {tenantOptions.map((option) => (
+                  <Picker.Item
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
+                  />
+                ))}
+              </Picker>
+            </View>
           </View>
 
           <View style={styles.buttonsContainer}>
@@ -65,12 +156,14 @@ const SignIn = ({ navigation }) => {
               variant="secondary"
               onPress={() => navigation.navigate("Landing")}
               icon={{ name: "arrow-left", position: "left" }}
+              disabled={loading}
             />
             <Button
               label="Ingresar"
               variant="primary"
-              onPress={() => setShowModal(true)}
+              onPress={handleSubmit}
               icon={{ name: "sign-in", position: "right" }}
+              disabled={loading}
             />
           </View>
         </View>
@@ -80,15 +173,19 @@ const SignIn = ({ navigation }) => {
         transparent={true}
         visible={showModal}
         animationType="fade"
-        onRequestClose={() => setShowModal(false)}
+        onRequestClose={() => !loading && setShowModal(false)}
       >
-        <TouchableWithoutFeedback onPress={() => setShowModal(false)}>
+        <TouchableWithoutFeedback
+          onPress={() => !loading && setShowModal(false)}
+        >
           <View style={styles.modalBackground}>
             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
               <View style={styles.modalContent}>
                 <Card
                   navigation={navigation}
                   closeModal={() => setShowModal(false)}
+                  onCodeSubmit={handleRegistration}
+                  loading={loading}
                 />
               </View>
             </TouchableWithoutFeedback>
@@ -132,6 +229,20 @@ const styles = StyleSheet.create({
   form: {
     gap: 15,
     marginBottom: 20,
+  },
+  pickerContainer: {
+    marginBottom: 15,
+  },
+  pickerLabel: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 14,
+    color: "#000",
+    marginBottom: 5,
+  },
+  picker: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    padding: 5,
   },
   buttonsContainer: {
     flexDirection: "row",

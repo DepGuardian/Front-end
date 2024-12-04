@@ -1,4 +1,3 @@
-// src/components/Card.js
 import React, { useState } from "react";
 import {
   View,
@@ -9,15 +8,12 @@ import {
 } from "react-native";
 import { theme } from "../theme";
 
-const Card = ({ navigation, closeModal }) => {
+const Card = ({ navigation, closeModal, onCodeSubmit, loading }) => {
   const [propietarioCode, setPropietarioCode] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (propietarioCode.trim()) {
-      closeModal();
-      navigation.navigate("MainApp", {
-        screen: "Pasarela",
-      });
+      await onCodeSubmit(propietarioCode);
     }
   };
 
@@ -26,7 +22,7 @@ const Card = ({ navigation, closeModal }) => {
       <Text style={styles.title}>Código de propietario</Text>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, loading && styles.inputDisabled]}
         value={propietarioCode}
         onChangeText={setPropietarioCode}
         placeholder="Ingrese su código"
@@ -34,10 +30,17 @@ const Card = ({ navigation, closeModal }) => {
         textAlign="center"
         keyboardType="numeric"
         maxLength={6}
+        editable={!loading}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Listo</Text>
+      <TouchableOpacity 
+        style={[styles.button, loading && styles.buttonDisabled]} 
+        onPress={handleSubmit}
+        disabled={loading || !propietarioCode.trim()}
+      >
+        <Text style={styles.buttonText}>
+          {loading ? "Cargando..." : "Listo"}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -79,6 +82,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     fontFamily: "Poppins-Regular",
   },
+  inputDisabled: {
+    backgroundColor: "#F5F5F5",
+    borderColor: "#D0D0D0",
+  },
   button: {
     width: 100,
     height: 40,
@@ -87,6 +94,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: "#666",
   },
   buttonText: {
     color: "#FFFFFF",
