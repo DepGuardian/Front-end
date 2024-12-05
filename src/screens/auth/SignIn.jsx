@@ -29,6 +29,7 @@ const SignIn = ({ navigation }) => {
   const tenantOptions = [
     { label: "Miraflores Urban", value: "1" },
     { label: "La Florida", value: "2" },
+    { label: "Los Manglares", value: "3" },
   ];
 
   const handleSubmit = () => {

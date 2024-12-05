@@ -163,7 +163,7 @@ const ChatRoom = ({navigation}) => {
           styles.messageSender,
           isOwnMessage ? styles.ownMessageText : styles.otherMessageText
         ]}>
-          {isOwnMessage ? 'Tú' : item.senderId}
+          {isOwnMessage ? 'Tú' : 'Anonimo'}
         </Text>
         <Text style={[
           styles.messageContent,
